@@ -76,23 +76,26 @@ public class NeoFeedService {
                         .build());
             }
 
-            List<CloseApproachItem> closeApproachItems = data.getClosestApproaches()
-                    .stream().map(closeApproach -> CloseApproachItem.builder()
-                            .approachDate(closeApproach.getApproachDateFull())
-                            .orbitBody(closeApproach.getOrbitBody())
-                            .velocityKps(Double.parseDouble(closeApproach.getRelativeVelocity().getKilometerPerSecond()))
-                            .velocityKph(Double.parseDouble(closeApproach.getRelativeVelocity().getKilometerPerHour()))
-                            .velocityMph(Double.parseDouble(closeApproach.getRelativeVelocity().getMilesPerSecond()))
-                            .distanceAstronomical(Double.parseDouble(closeApproach.getMissDistance().getAstronomical()))
-                            .distanceLunar(Double.parseDouble(closeApproach.getMissDistance().getLunar()))
-                            .distanceKilometers(Double.parseDouble(closeApproach.getMissDistance().getKilometers()))
-                            .distanceMiles(Double.parseDouble(closeApproach.getMissDistance().getMiles()))
-                            .build())
-                    .toList();
-            builder.closeApproaches(closeApproachItems);
+            if (!Objects.isNull(data.getClosestApproaches())) {
+                List<CloseApproachItem> closeApproachItems = data.getClosestApproaches()
+                        .stream().map(closeApproach -> CloseApproachItem.builder()
+                                .approachDate(closeApproach.getApproachDateFull())
+                                .orbitBody(closeApproach.getOrbitBody())
+                                .velocityKps(Double.parseDouble(closeApproach.getRelativeVelocity().getKilometerPerSecond()))
+                                .velocityKph(Double.parseDouble(closeApproach.getRelativeVelocity().getKilometerPerHour()))
+                                .velocityMph(Double.parseDouble(closeApproach.getRelativeVelocity().getMilesPerSecond()))
+                                .distanceAstronomical(Double.parseDouble(closeApproach.getMissDistance().getAstronomical()))
+                                .distanceLunar(Double.parseDouble(closeApproach.getMissDistance().getLunar()))
+                                .distanceKilometers(Double.parseDouble(closeApproach.getMissDistance().getKilometers()))
+                                .distanceMiles(Double.parseDouble(closeApproach.getMissDistance().getMiles()))
+                                .build())
+                        .toList();
+                builder.closeApproaches(closeApproachItems);
+            }
 
             return builder.build();
         }).toList();
+
     }
 
     private void validateRequest(LocalDate startDate, LocalDate endDate) throws BadRequestException {

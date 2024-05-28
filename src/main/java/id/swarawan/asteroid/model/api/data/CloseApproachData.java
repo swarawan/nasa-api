@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import id.swarawan.asteroid.model.api.data.item.MissDistanceItem;
 import id.swarawan.asteroid.model.api.data.item.RelativeVelocityItem;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CloseApproachData {
 
     @JsonProperty(value = "close_approach_date")
