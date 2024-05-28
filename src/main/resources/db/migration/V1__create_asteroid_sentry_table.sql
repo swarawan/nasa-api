@@ -1,6 +1,7 @@
 create table if not exists `asteroid_data`
 (
     `id`                  bigint primary key auto_increment not null,
+    `sentry_id`           bigint,
     `reference_id`        varchar(256)                      not null,
     `name`                varchar(256)                      not null,
     `nasa_jpl_url`        varchar(256),
@@ -21,7 +22,8 @@ create table if not exists `asteroid_data`
     `sentry_data_url`     text,
     `created_at`          datetime                          not null default current_timestamp,
     `updated_at`          datetime on update current_timestamp,
-    `deleted_at`          datetime
+    `deleted_at`          datetime,
+    foreign key (sentry_id) references sentry_data (id)
 );
 
 create table if not exists `sentry_data`

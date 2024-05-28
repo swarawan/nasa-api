@@ -27,6 +27,10 @@ public class AsteroidData {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "sentry_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    private SentryData sentry;
+
     @Column(name = "reference_id", nullable = false)
     private String referenceId;
 
@@ -71,6 +75,18 @@ public class AsteroidData {
 
     @Column(name = "velocity_mph")
     private Double velocityMph;
+
+    @Column(name = "distance_astronomical")
+    private Double distanceAstronomical;
+
+    @Column(name = "distance_lunar")
+    private Double distanceLunar;
+
+    @Column(name = "distance_kilometers")
+    private Double distanceKilometers;
+
+    @Column(name = "distance_miles")
+    private Double distanceMiles;
 
     @Column(name = "orbiting_body")
     private String orbitingBody;
