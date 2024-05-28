@@ -1,12 +1,13 @@
 package id.swarawan.asteroid.model.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import id.swarawan.asteroid.model.api.data.AsteroidObjectData;
+import id.swarawan.asteroid.model.api.data.AsteroidObjectApiData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -20,5 +21,5 @@ public class NeoFeedApiResponse {
     private Integer elementCount;
 
     @JsonProperty(value = "near_earth_objects")
-    private Map<String, List<AsteroidObjectData>> nearEarthObjects;
+    private Map<LocalDate, List<AsteroidObjectApiData>> nearEarthObjects;
 }

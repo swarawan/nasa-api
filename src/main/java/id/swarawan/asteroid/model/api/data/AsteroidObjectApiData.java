@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AsteroidObjectData {
+public class AsteroidObjectApiData {
 
     @JsonProperty(value = "id")
     private String id;
@@ -30,13 +30,13 @@ public class AsteroidObjectData {
     private Double absoluteMagnitude;
 
     @JsonProperty(value = "estimated_diameter")
-    private EstimatedDiameterData estimatedDiameter;
+    private EstimatedDiameterApiData estimatedDiameter;
 
     @JsonProperty(value = "is_potentially_hazardous_asteroid")
     private Boolean isHazardousAsteroid;
 
     @JsonProperty(value = "close_approach_data")
-    private List<CloseApproachData> closestApproaches;
+    private List<CloseApproachApiData> closestApproaches;
 
     @JsonProperty(value = "is_sentry_object")
     private Boolean isSentryObject;

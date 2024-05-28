@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EstimatedDiameterItem {
+public class EstimatedDiameterApiItem {
 
     @JsonProperty(value = "estimated_diameter_min")
     private Double min;

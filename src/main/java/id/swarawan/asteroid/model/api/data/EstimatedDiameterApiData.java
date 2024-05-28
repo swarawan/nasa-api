@@ -1,7 +1,7 @@
 package id.swarawan.asteroid.model.api.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import id.swarawan.asteroid.model.api.data.item.EstimatedDiameterItem;
+import id.swarawan.asteroid.model.api.data.item.EstimatedDiameterApiItem;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,17 +11,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EstimatedDiameterData {
+public class EstimatedDiameterApiData {
 
     @JsonProperty(value = "kilometers")
-    private EstimatedDiameterItem kilometers;
+    private EstimatedDiameterApiItem kilometers;
 
     @JsonProperty(value = "meters")
-    private EstimatedDiameterItem meters;
+    private EstimatedDiameterApiItem meters;
 
     @JsonProperty(value = "miles")
-    private EstimatedDiameterItem miles;
+    private EstimatedDiameterApiItem miles;
 
     @JsonProperty(value = "feet")
-    private EstimatedDiameterItem feet;
+    private EstimatedDiameterApiItem feet;
 }

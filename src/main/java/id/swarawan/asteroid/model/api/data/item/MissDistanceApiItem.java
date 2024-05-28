@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MissDistanceItem {
+public class MissDistanceApiItem {
 
     @JsonProperty(value = "astronomical")
     private String astronomical;

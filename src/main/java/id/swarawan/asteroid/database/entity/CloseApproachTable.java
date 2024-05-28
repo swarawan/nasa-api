@@ -14,58 +14,24 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "asteroid_data")
+@Table(name = "close_approach")
 @DynamicInsert
 @DynamicUpdate
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AsteroidData {
+public class CloseApproachTable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JoinColumn(name = "sentry_id")
-    @OneToOne(fetch = FetchType.LAZY)
-    private SentryData sentry;
-
-    @Column(name = "reference_id", nullable = false)
-    private String referenceId;
-
-    @Column(name = "name", nullable = false)
-    private String name;
-
-    @Column(name = "nasa_jpl_url")
-    private String nasaJplUrl;
-
-    @Column(name = "absolute_magnitude")
-    private Double absoluteMagnitude;
-
-    @Column(name = "diameter_km_min")
-    private Double diameterKmMin;
-
-    @Column(name = "diameter_km_max")
-    private Double diameterKmMax;
-
-    @Column(name = "diameter_miles_min")
-    private Double diameterMilesMin;
-
-    @Column(name = "diameter_miles_max")
-    private Double diameterMilesMax;
-
-    @Column(name = "diameter_feet_min")
-    private Double diameterFeetMin;
-
-    @Column(name = "diameter_feet_max")
-    private Double diameterFeetMax;
-
-    @Column(name = "is_hazard_potential")
-    private Boolean isHazardPotential;
-
     @Column(name = "approach_date")
-    private LocalDateTime approachDate;
+    private LocalDate approachDate;
+
+    @Column(name = "approach_date_full")
+    private LocalDateTime approachDateFull;
 
     @Column(name = "velocity_kps")
     private Double velocityKps;
@@ -90,12 +56,6 @@ public class AsteroidData {
 
     @Column(name = "orbiting_body")
     private String orbitingBody;
-
-    @Column(name = "is_sentry_object")
-    private Boolean isSentryObject;
-
-    @Column(name = "sentry_data_url")
-    private String sentryDataUrl;
 
     @Column(name = "created_at")
     @CreationTimestamp

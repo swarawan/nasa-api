@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RelativeVelocityItem {
+public class RelativeVelocityApiItem {
 
     @JsonProperty(value = "kilometers_per_second")
     private String kilometerPerSecond;

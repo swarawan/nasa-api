@@ -2,10 +2,10 @@ package id.swarawan.asteroid.service.neofeed;
 
 import id.swarawan.asteroid.config.exceptions.BadRequestException;
 import id.swarawan.asteroid.config.utility.AppUtils;
+import id.swarawan.asteroid.database.service.AsteroidDbService;
 import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
-import id.swarawan.asteroid.model.api.data.AsteroidObjectData;
-import id.swarawan.asteroid.model.api.data.item.EstimatedDiameterItem;
-import id.swarawan.asteroid.model.response.NeoSentryResponse;
+import id.swarawan.asteroid.model.api.data.AsteroidObjectApiData;
+import id.swarawan.asteroid.model.api.data.item.EstimatedDiameterApiItem;
 import id.swarawan.asteroid.model.response.item.CloseApproachItem;
 import id.swarawan.asteroid.model.response.item.DiameterItem;
 import id.swarawan.asteroid.model.response.item.NeoFeedItem;
@@ -24,17 +24,23 @@ public class NeoFeedService {
 
     private final NasaApiService nasaApiService;
     private final NeoSentryService neoSentryService;
+    private final AsteroidDbService asteroidDbService;
 
     @Autowired
-    public NeoFeedService(NasaApiService nasaApiService, NeoSentryService neoSentryService) {
+    public NeoFeedService(NasaApiService nasaApiService,
+                          NeoSentryService neoSentryService,
+                          AsteroidDbService asteroidDbService) {
         this.nasaApiService = nasaApiService;
         this.neoSentryService = neoSentryService;
+        this.asteroidDbService = asteroidDbService;
     }
 
     public List<NeoFeedResponse> getNeoFeed(LocalDate startDate, LocalDate endDate) throws BadRequestException {
         List<NeoFeedResponse> result = new ArrayList<>();
 
         validateRequest(startDate, endDate);
+
+        // filter start date
 
         NeoFeedApiResponse neoFeedApiResponse = nasaApiService.getNeoFeedApi(startDate, endDate);
         neoFeedApiResponse.getNearEarthObjects().forEach((date, data) -> {
@@ -45,13 +51,13 @@ public class NeoFeedService {
                     .build();
             result.add(item);
         });
+        asteroidDbService.save(result);
 
         return result;
     }
 
-    private List<NeoFeedItem> collectFeeds(List<AsteroidObjectData> asteroids) {
+    private List<NeoFeedItem> collectFeeds(List<AsteroidObjectApiData> asteroids) {
         return asteroids.stream().map(data -> {
-
             NeoFeedItem.NeoFeedItemBuilder builder = NeoFeedItem.builder()
                     .id(data.getReferenceId())
                     .name(data.getName())
@@ -65,19 +71,19 @@ public class NeoFeedService {
             }
 
             if (!Objects.isNull(data.getEstimatedDiameter())) {
-                EstimatedDiameterItem estimatedDiameterKm = data.getEstimatedDiameter().getKilometers();
+                EstimatedDiameterApiItem estimatedDiameterKm = data.getEstimatedDiameter().getKilometers();
                 builder.estimatedDiameterKm(DiameterItem.builder()
                         .diameterMin(estimatedDiameterKm.getMin())
                         .diameterMax(estimatedDiameterKm.getMax())
                         .build());
 
-                EstimatedDiameterItem estimatedDiameterMiles = data.getEstimatedDiameter().getMiles();
+                EstimatedDiameterApiItem estimatedDiameterMiles = data.getEstimatedDiameter().getMiles();
                 builder.estimatedDiameterMiles(DiameterItem.builder()
                         .diameterMin(estimatedDiameterMiles.getMin())
                         .diameterMax(estimatedDiameterMiles.getMax())
                         .build());
 
-                EstimatedDiameterItem estimatedDiameterFeet = data.getEstimatedDiameter().getKilometers();
+                EstimatedDiameterApiItem estimatedDiameterFeet = data.getEstimatedDiameter().getKilometers();
                 builder.estimatedDiameterFeet(DiameterItem.builder()
                         .diameterMin(estimatedDiameterFeet.getMin())
                         .diameterMax(estimatedDiameterFeet.getMax())
@@ -87,7 +93,8 @@ public class NeoFeedService {
             if (!Objects.isNull(data.getClosestApproaches())) {
                 List<CloseApproachItem> closeApproachItems = data.getClosestApproaches()
                         .stream().map(closeApproach -> CloseApproachItem.builder()
-                                .approachDate(closeApproach.getApproachDateFull())
+                                .approachDate(closeApproach.getApproachDate())
+                                .approachDateFull(closeApproach.getApproachDateFull())
                                 .orbitBody(closeApproach.getOrbitBody())
                                 .velocityKps(AppUtils.toDouble(closeApproach.getRelativeVelocity().getKilometerPerSecond(), 0.0))
                                 .velocityKph(AppUtils.toDouble(closeApproach.getRelativeVelocity().getKilometerPerHour(), 0.0))
@@ -110,6 +117,8 @@ public class NeoFeedService {
             throw new BadRequestException("Start / end date is required");
         } else if (startDate.isAfter(endDate)) {
             throw new BadRequestException("Start date cannot more than end date");
+        } else if (endDate.isAfter(startDate.plusDays(7))) {
+            throw new BadRequestException("The feed date limit is only 7 days");
         }
     }
 }

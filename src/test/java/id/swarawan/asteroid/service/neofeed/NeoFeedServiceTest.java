@@ -2,13 +2,14 @@ package id.swarawan.asteroid.service.neofeed;
 
 import id.swarawan.asteroid.config.exceptions.BadRequestException;
 import id.swarawan.asteroid.config.utility.AppUtils;
+import id.swarawan.asteroid.database.service.AsteroidDbService;
 import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
-import id.swarawan.asteroid.model.api.data.AsteroidObjectData;
-import id.swarawan.asteroid.model.api.data.CloseApproachData;
-import id.swarawan.asteroid.model.api.data.EstimatedDiameterData;
-import id.swarawan.asteroid.model.api.data.item.EstimatedDiameterItem;
-import id.swarawan.asteroid.model.api.data.item.MissDistanceItem;
-import id.swarawan.asteroid.model.api.data.item.RelativeVelocityItem;
+import id.swarawan.asteroid.model.api.data.AsteroidObjectApiData;
+import id.swarawan.asteroid.model.api.data.CloseApproachApiData;
+import id.swarawan.asteroid.model.api.data.EstimatedDiameterApiData;
+import id.swarawan.asteroid.model.api.data.item.EstimatedDiameterApiItem;
+import id.swarawan.asteroid.model.api.data.item.MissDistanceApiItem;
+import id.swarawan.asteroid.model.api.data.item.RelativeVelocityApiItem;
 import id.swarawan.asteroid.model.response.NeoSentryResponse;
 import id.swarawan.asteroid.model.response.item.NeoFeedItem;
 import id.swarawan.asteroid.model.response.NeoFeedResponse;
@@ -25,6 +26,7 @@ import org.mockito.MockitoAnnotations;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -35,6 +37,9 @@ class NeoFeedServiceTest {
 
     @Mock
     private NeoSentryService neoSentryService;
+
+    @Mock
+    private AsteroidDbService asteroidDbService;
 
     @InjectMocks
     private NeoFeedService neoFeedService;
@@ -56,6 +61,13 @@ class NeoFeedServiceTest {
         BadRequestException exception = Assertions.assertThrows(BadRequestException.class, () ->
                 neoFeedService.getNeoFeed(LocalDate.now(), null));
         Assertions.assertEquals("Start / end date is required", exception.getMessage());
+    }
+
+    @Test
+    public void getNeoFeed_exceedLimitDays_throwException() {
+        BadRequestException exception = Assertions.assertThrows(BadRequestException.class, () ->
+                neoFeedService.getNeoFeed(LocalDate.now(), LocalDate.now().plusDays(10)));
+        Assertions.assertEquals("The feed date limit is only 7 days", exception.getMessage());
     }
 
     @Test
@@ -82,29 +94,29 @@ class NeoFeedServiceTest {
 
     @Test
     public void collectFeeds_success() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        EstimatedDiameterItem sampleDiameter = EstimatedDiameterItem.builder().min(1.1).max(2.2).build();
-        AsteroidObjectData sampleData = AsteroidObjectData.builder()
+        EstimatedDiameterApiItem sampleDiameter = EstimatedDiameterApiItem.builder().min(1.1).max(2.2).build();
+        AsteroidObjectApiData sampleData = AsteroidObjectApiData.builder()
                 .id("1")
                 .referenceId("1")
                 .name("Name test")
                 .nasaJplUrl("https://google.com")
                 .absoluteMagnitude(5.5)
-                .estimatedDiameter(EstimatedDiameterData.builder()
+                .estimatedDiameter(EstimatedDiameterApiData.builder()
                         .kilometers(sampleDiameter)
                         .meters(sampleDiameter)
                         .miles(sampleDiameter)
                         .feet(sampleDiameter)
                         .build())
-                .closestApproaches(Arrays.asList(CloseApproachData.builder()
-                        .approachDate("2024-01-01")
-                        .approachDateFull("2024-01-01 01:01:01")
+                .closestApproaches(Arrays.asList(CloseApproachApiData.builder()
+                        .approachDate(LocalDate.of(2024, 1, 1))
+                        .approachDateFull(LocalDateTime.of(2024, 1, 1, 1, 1, 1))
                         .approachDateEpoch(564646464L)
-                        .relativeVelocity(RelativeVelocityItem.builder()
+                        .relativeVelocity(RelativeVelocityApiItem.builder()
                                 .kilometerPerHour("12.1")
                                 .kilometerPerSecond("12.2")
                                 .milesPerSecond("12.3")
                                 .build())
-                        .missDistance(MissDistanceItem.builder()
+                        .missDistance(MissDistanceApiItem.builder()
                                 .astronomical("12.1")
                                 .lunar("12.1")
                                 .kilometers("12.1")
@@ -121,7 +133,7 @@ class NeoFeedServiceTest {
                 .spkId("001")
                 .fullName("OBS")
                 .build();
-        List<AsteroidObjectData> sampleItem = Arrays.asList(sampleData);
+        List<AsteroidObjectApiData> sampleItem = Arrays.asList(sampleData);
 
         Mockito.when(neoSentryService.getNeoSentry(Mockito.anyString())).thenReturn(sampleSentry);
         Method collectFeedsMethod = neoFeedService.getClass().getDeclaredMethod("collectFeeds", List.class);
@@ -149,6 +161,9 @@ class NeoFeedServiceTest {
         Assertions.assertEquals(actual.get(0).getCloseApproaches().size(), sampleItem.get(0).getClosestApproaches().size());
         Assertions.assertEquals(
                 actual.get(0).getCloseApproaches().get(0).getApproachDate(),
+                sampleItem.get(0).getClosestApproaches().get(0).getApproachDate());
+        Assertions.assertEquals(
+                actual.get(0).getCloseApproaches().get(0).getApproachDateFull(),
                 sampleItem.get(0).getClosestApproaches().get(0).getApproachDateFull());
         Assertions.assertEquals(
                 actual.get(0).getCloseApproaches().get(0).getVelocityKph(),
@@ -177,7 +192,7 @@ class NeoFeedServiceTest {
     public void getNeoFeed_resultData() {
         List<NeoFeedResponse> sampleResponse = Arrays.asList(
                 NeoFeedResponse.builder()
-                        .date("2024-01-01")
+                        .date(LocalDate.of(2024, 1, 1))
                         .asteroids(Arrays.asList(NeoFeedItem.builder()
                                 .id("001")
                                 .name("Asteroid-001")
@@ -188,8 +203,8 @@ class NeoFeedServiceTest {
         NeoFeedApiResponse nasaResponse = NeoFeedApiResponse.builder()
                 .elementCount(1)
                 .nearEarthObjects(Collections.singletonMap(
-                        "2024-01-01",
-                        Arrays.asList(AsteroidObjectData.builder()
+                        LocalDate.of(2024, 1, 1),
+                        Arrays.asList(AsteroidObjectApiData.builder()
                                 .referenceId("001")
                                 .name("Asteroid-001")
                                 .build()))

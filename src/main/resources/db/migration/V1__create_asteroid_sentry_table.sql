@@ -32,6 +32,7 @@ create table if not exists `asteroid_data`
     `reference_id`        varchar(256)                      not null,
     `name`                varchar(256)                      not null,
     `nasa_jpl_url`        varchar(256),
+    `approach_date`       datetime,
     `absolute_magnitude`  double,
     `diameter_km_min`     double,
     `diameter_km_max`     double,
@@ -40,15 +41,30 @@ create table if not exists `asteroid_data`
     `diameter_feet_min`   double,
     `diameter_feet_max`   double,
     `is_hazard_potential` tinyint,
-    `approach_date`       datetime,
-    `velocity_kps`        double,
-    `velocity_kph`        double,
-    `velocity_mph`        double,
-    `orbiting_body`       varchar(100),
     `is_sentry_object`    tinyint,
-    `sentry_data_url`     text,
     `created_at`          datetime                          not null default current_timestamp,
     `updated_at`          datetime on update current_timestamp,
     `deleted_at`          datetime,
     foreign key (sentry_id) references sentry_data (id)
 );
+
+create table if not exists `close_approach`
+(
+    `id`                    bigint primary key auto_increment not null,
+    `asteroid_id`           bigint,
+    `approach_date`         datetime,
+    `velocity_kps`          double,
+    `velocity_kph`          double,
+    `velocity_mph`          double,
+    `distance_astronomical` double,
+    `distance_lunar`        double,
+    `distance_kilometers`   double,
+    `distance_miles`        double,
+    `orbiting_body`         varchar(100),
+    `created_at`            datetime                          not null default current_timestamp,
+    `updated_at`            datetime on update current_timestamp,
+    `deleted_at`            datetime,
+    foreign key (asteroid_id) references asteroid_data (id)
+);
+
+

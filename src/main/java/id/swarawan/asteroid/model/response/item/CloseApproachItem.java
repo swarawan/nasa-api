@@ -2,12 +2,13 @@ package id.swarawan.asteroid.model.response.item;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import id.swarawan.asteroid.model.api.data.item.MissDistanceItem;
-import id.swarawan.asteroid.model.api.data.item.RelativeVelocityItem;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -16,7 +17,10 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CloseApproachItem {
     @JsonProperty(value = "date")
-    private String approachDate;
+    private LocalDate approachDate;
+
+    @JsonProperty(value = "date_full")
+    private LocalDateTime approachDateFull;
 
     @JsonProperty(value = "velocity_kps")
     private Double velocityKps;
