@@ -18,7 +18,7 @@ import java.util.Objects;
 @Service
 public class NeoFeedService {
 
-    private NasaApiService nasaApiService;
+    private final NasaApiService nasaApiService;
 
     @Autowired
     public NeoFeedService(NasaApiService nasaApiService) {
@@ -47,6 +47,10 @@ public class NeoFeedService {
         return asteroids.stream().map(data -> NeoFeedItem.builder()
                 .id(data.getReferenceId())
                 .name(data.getName())
+                .jplUrl(data.getNasaJplUrl())
+                .absoluteMagnitude(data.getAbsoluteMagnitude())
+                .isHazardAsteroid(data.getIsHazardousAsteroid())
+                .isSentryObject(data.getIsSentryObject())
                 .build()).toList();
     }
 

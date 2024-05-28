@@ -32,7 +32,7 @@ class NasaApiServiceTest {
                 .elementCount(1)
                 .build();
 
-        Mockito.when(nasaApi.getNeoFeedApi(Mockito.anyString(), Mockito.any(), Mockito.any()))
+        Mockito.when(nasaApi.getNeoFeedApi(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
                 .then(answer -> sampleResponse);
 
         NeoFeedApiResponse actualResponse = nasaApiService.getNeoFeedApi(LocalDate.now(), LocalDate.now());
@@ -41,7 +41,7 @@ class NasaApiServiceTest {
 
     @Test
     public void test_getNeoFeed_failure() throws Exception {
-        Mockito.when(nasaApi.getNeoFeedApi(Mockito.anyString(), Mockito.any(), Mockito.any()))
+        Mockito.when(nasaApi.getNeoFeedApi(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
                 .thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error on requesting an API"));
 
         Assertions.assertThrows(ResponseStatusException.class, () -> {

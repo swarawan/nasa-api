@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 
-@FeignClient(name = "nasaApi", url = "http://api.nasa.gov")
+@FeignClient(name = "nasa-api", url = "https://api.nasa.gov", configuration = OpenFeignConfig.class)
 public interface NasaApi {
 
     @GetMapping("/neo/rest/v1/feed")
     NeoFeedApiResponse getNeoFeedApi(@RequestParam("api_key") String key,
-                                     @RequestParam("start_date") LocalDate startDate,
-                                     @RequestParam("end_date") LocalDate endDate);
+                                     @RequestParam("start_date") String startDate,
+                                     @RequestParam("end_date") String endDate);
 }

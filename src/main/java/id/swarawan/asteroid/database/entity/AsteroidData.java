@@ -27,7 +27,7 @@ public class AsteroidData {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "sentry_id")
+    @JoinColumn(name = "sentry_id")
     @OneToOne(fetch = FetchType.LAZY)
     private SentryData sentry;
 

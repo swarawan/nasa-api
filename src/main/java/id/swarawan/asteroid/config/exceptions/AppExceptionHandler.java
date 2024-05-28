@@ -15,7 +15,7 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<BaseResponse> responseStatusException(ResponseStatusException exception) {
         BaseResponse response = BaseResponse.builder()
                 .success(false)
-                .message(exception.getMessage())
+                .message(exception.getReason())
                 .build();
         return new ResponseEntity<>(response, exception.getStatusCode());
     }

@@ -13,7 +13,7 @@ public class NasaApiService {
     @Value("${nasa-api}")
     private String nasaApiKey;
 
-    private NasaApi nasaApi;
+    private final NasaApi nasaApi;
 
     @Autowired
     public NasaApiService(NasaApi nasaApi) {
@@ -21,6 +21,6 @@ public class NasaApiService {
     }
 
     public NeoFeedApiResponse getNeoFeedApi(LocalDate startDate, LocalDate endDate) {
-        return nasaApi.getNeoFeedApi(nasaApiKey, startDate, endDate);
+        return nasaApi.getNeoFeedApi(nasaApiKey, startDate.toString(), endDate.toString());
     }
 }
