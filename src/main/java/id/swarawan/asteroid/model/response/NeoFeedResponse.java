@@ -1,6 +1,7 @@
 package id.swarawan.asteroid.model.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import id.swarawan.asteroid.model.response.item.NeoFeedItem;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

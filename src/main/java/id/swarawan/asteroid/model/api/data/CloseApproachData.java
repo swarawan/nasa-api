@@ -1,6 +1,8 @@
 package id.swarawan.asteroid.model.api.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import id.swarawan.asteroid.model.api.data.item.MissDistanceItem;
+import id.swarawan.asteroid.model.api.data.item.RelativeVelocityItem;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,37 +31,4 @@ public class CloseApproachData {
 
     @JsonProperty(value = "orbiting_body")
     private String orbitBody;
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    class RelativeVelocityItem {
-
-        @JsonProperty(value = "kilometers_per_second")
-        private String kilometerPerSecond;
-
-        @JsonProperty(value = "kilometers_per_hour")
-        private String kilometerPerHour;
-
-        @JsonProperty(value = "miles_per_hour")
-        private String milesPerSecond;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    class MissDistanceItem {
-
-        @JsonProperty(value = "astronomical")
-        private String astronomical;
-
-        @JsonProperty(value = "lunar")
-        private String lunar;
-
-        @JsonProperty(value = "kilometers")
-        private String kilometers;
-
-        @JsonProperty(value = "miles")
-        private String miles;
-    }
 }

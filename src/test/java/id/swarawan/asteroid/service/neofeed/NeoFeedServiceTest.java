@@ -3,7 +3,7 @@ package id.swarawan.asteroid.service.neofeed;
 import id.swarawan.asteroid.config.exceptions.BadRequestException;
 import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
 import id.swarawan.asteroid.model.api.data.AsteroidObjectData;
-import id.swarawan.asteroid.model.response.NeoFeedItem;
+import id.swarawan.asteroid.model.response.item.NeoFeedItem;
 import id.swarawan.asteroid.model.response.NeoFeedResponse;
 import id.swarawan.asteroid.service.nasa.NasaApiService;
 import org.junit.jupiter.api.Assertions;
@@ -17,8 +17,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDate;
 import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class NeoFeedServiceTest {
