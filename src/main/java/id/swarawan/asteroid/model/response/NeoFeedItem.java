@@ -6,17 +6,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NeoFeedResponse {
+public class NeoFeedItem {
 
-    @JsonProperty(value = "date")
-    private String date;
+    @JsonProperty(value = "id")
+    private String id;
 
-    @JsonProperty(value = "asteroids")
-    private List<NeoFeedItem> asteroids;
+    @JsonProperty(value = "name")
+    private String name;
 }

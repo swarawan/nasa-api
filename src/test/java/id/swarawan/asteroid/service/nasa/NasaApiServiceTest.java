@@ -35,7 +35,7 @@ class NasaApiServiceTest {
         Mockito.when(nasaApi.getNeoFeedApi(Mockito.anyString(), Mockito.any(), Mockito.any()))
                 .then(answer -> sampleResponse);
 
-        NeoFeedApiResponse actualResponse = nasaApiService.getNeoFeedApi("abcd1234", LocalDate.now(), LocalDate.now());
+        NeoFeedApiResponse actualResponse = nasaApiService.getNeoFeedApi(LocalDate.now(), LocalDate.now());
         Assertions.assertEquals(actualResponse.getElementCount(), sampleResponse.getElementCount());
     }
 
@@ -45,7 +45,7 @@ class NasaApiServiceTest {
                 .thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error on requesting an API"));
 
         Assertions.assertThrows(ResponseStatusException.class, () -> {
-            nasaApiService.getNeoFeedApi("abcd1234", LocalDate.now(), LocalDate.now());
+            nasaApiService.getNeoFeedApi(LocalDate.now(), LocalDate.now());
         });
     }
 
