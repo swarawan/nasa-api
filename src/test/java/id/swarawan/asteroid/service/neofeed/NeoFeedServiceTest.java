@@ -2,7 +2,10 @@ package id.swarawan.asteroid.service.neofeed;
 
 import id.swarawan.asteroid.config.exceptions.BadRequestException;
 import id.swarawan.asteroid.config.utility.AppUtils;
+import id.swarawan.asteroid.database.entity.AsteroidTable;
+import id.swarawan.asteroid.database.entity.CloseApproachTable;
 import id.swarawan.asteroid.database.service.AsteroidDbService;
+import id.swarawan.asteroid.database.service.CloseApproachDbService;
 import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
 import id.swarawan.asteroid.model.api.data.AsteroidObjectApiData;
 import id.swarawan.asteroid.model.api.data.CloseApproachApiData;
@@ -40,6 +43,9 @@ class NeoFeedServiceTest {
 
     @Mock
     private AsteroidDbService asteroidDbService;
+
+    @Mock
+    private CloseApproachDbService closeApproachDbService;
 
     @InjectMocks
     private NeoFeedService neoFeedService;
@@ -94,106 +100,104 @@ class NeoFeedServiceTest {
 
     @Test
     public void collectFeeds_success() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        EstimatedDiameterApiItem sampleDiameter = EstimatedDiameterApiItem.builder().min(1.1).max(2.2).build();
-        AsteroidObjectApiData sampleData = AsteroidObjectApiData.builder()
-                .id("1")
+        LocalDate sampleDate = LocalDate.now();
+        String sampleDateFull = "2024-Jan-01 01:01:01";
+        Double sampleRange = 1.1;
+        AsteroidTable sampleData = AsteroidTable.builder()
+                .id(1L)
                 .referenceId("1")
                 .name("Name test")
                 .nasaJplUrl("https://google.com")
                 .absoluteMagnitude(5.5)
-                .estimatedDiameter(EstimatedDiameterApiData.builder()
-                        .kilometers(sampleDiameter)
-                        .meters(sampleDiameter)
-                        .miles(sampleDiameter)
-                        .feet(sampleDiameter)
-                        .build())
-                .closestApproaches(Arrays.asList(CloseApproachApiData.builder()
-                        .approachDate(LocalDate.of(2024, 1, 1))
-                        .approachDateFull(LocalDateTime.of(2024, 1, 1, 1, 1, 1))
-                        .approachDateEpoch(564646464L)
-                        .relativeVelocity(RelativeVelocityApiItem.builder()
-                                .kilometerPerHour("12.1")
-                                .kilometerPerSecond("12.2")
-                                .milesPerSecond("12.3")
-                                .build())
-                        .missDistance(MissDistanceApiItem.builder()
-                                .astronomical("12.1")
-                                .lunar("12.1")
-                                .kilometers("12.1")
-                                .miles("12.1")
-                                .build())
-                        .orbitBody("Earth")
-                        .build()))
-                .isHazardousAsteroid(true)
+                .diameterKmMin(sampleRange)
+                .diameterKmMax(sampleRange)
+                .diameterMilesMin(sampleRange)
+                .diameterMilesMax(sampleRange)
+                .diameterFeetMin(sampleRange)
+                .diameterFeetMax(sampleRange)
+                .isHazardPotential(true)
                 .isSentryObject(true)
-                .sentryData("http:google.com")
                 .build();
 
         NeoSentryResponse sampleSentry = NeoSentryResponse.builder()
                 .spkId("001")
                 .fullName("OBS")
                 .build();
-        List<AsteroidObjectApiData> sampleItem = Arrays.asList(sampleData);
+        List<AsteroidTable> sampleItem = Collections.singletonList(sampleData);
+        List<CloseApproachTable> sampleCloseApproach = Collections.singletonList(CloseApproachTable.builder()
+                .approachDate(sampleDate)
+                .approachDateFull(sampleDateFull)
+                .orbitingBody("Earth")
+                .velocityKps(12.1)
+                .velocityKph(12.2)
+                .velocityMph(12.3)
+                .distanceAstronomical(12.1)
+                .distanceLunar(12.1)
+                .distanceKilometers(12.1)
+                .distanceMiles(12.1)
+                .build());
 
         Mockito.when(neoSentryService.getNeoSentry(Mockito.anyString())).thenReturn(sampleSentry);
+        Mockito.when(closeApproachDbService.getByAsteroid(Mockito.anyLong())).thenReturn(sampleCloseApproach);
         Method collectFeedsMethod = neoFeedService.getClass().getDeclaredMethod("collectFeeds", List.class);
         collectFeedsMethod.setAccessible(true);
 
         List<NeoFeedItem> actual = (List<NeoFeedItem>) collectFeedsMethod.invoke(neoFeedService, sampleItem);
 
         Assertions.assertEquals(actual.size(), sampleItem.size());
-        Assertions.assertEquals(actual.get(0).getId(), sampleItem.get(0).getId());
+        Assertions.assertEquals(actual.get(0).getId(), sampleItem.get(0).getReferenceId());
         Assertions.assertEquals(actual.get(0).getName(), sampleItem.get(0).getName());
         Assertions.assertEquals(actual.get(0).getJplUrl(), sampleItem.get(0).getNasaJplUrl());
         Assertions.assertEquals(actual.get(0).getAbsoluteMagnitude(), sampleItem.get(0).getAbsoluteMagnitude());
-        Assertions.assertEquals(actual.get(0).getIsHazardAsteroid(), sampleItem.get(0).getIsHazardousAsteroid());
+        Assertions.assertEquals(actual.get(0).getIsHazardAsteroid(), sampleItem.get(0).getIsHazardPotential());
         Assertions.assertEquals(actual.get(0).getIsSentryObject(), sampleItem.get(0).getIsSentryObject());
         Assertions.assertEquals(actual.get(0).getSentryData().getSpkId(), sampleSentry.getSpkId());
         Assertions.assertEquals(actual.get(0).getSentryData().getFullName(), sampleSentry.getFullName());
 
-        Assertions.assertEquals(actual.get(0).getEstimatedDiameterKm().getDiameterMin(), sampleItem.get(0).getEstimatedDiameter().getKilometers().getMin());
-        Assertions.assertEquals(actual.get(0).getEstimatedDiameterKm().getDiameterMax(), sampleItem.get(0).getEstimatedDiameter().getKilometers().getMax());
-        Assertions.assertEquals(actual.get(0).getEstimatedDiameterMiles().getDiameterMin(), sampleItem.get(0).getEstimatedDiameter().getMiles().getMin());
-        Assertions.assertEquals(actual.get(0).getEstimatedDiameterMiles().getDiameterMax(), sampleItem.get(0).getEstimatedDiameter().getMiles().getMax());
-        Assertions.assertEquals(actual.get(0).getEstimatedDiameterFeet().getDiameterMin(), sampleItem.get(0).getEstimatedDiameter().getFeet().getMin());
-        Assertions.assertEquals(actual.get(0).getEstimatedDiameterFeet().getDiameterMax(), sampleItem.get(0).getEstimatedDiameter().getFeet().getMax());
+        Assertions.assertEquals(actual.get(0).getEstimatedDiameterKm().getDiameterMin(), sampleItem.get(0).getDiameterKmMin());
+        Assertions.assertEquals(actual.get(0).getEstimatedDiameterKm().getDiameterMax(), sampleItem.get(0).getDiameterKmMax());
+        Assertions.assertEquals(actual.get(0).getEstimatedDiameterMiles().getDiameterMin(), sampleItem.get(0).getDiameterMilesMin());
+        Assertions.assertEquals(actual.get(0).getEstimatedDiameterMiles().getDiameterMax(), sampleItem.get(0).getDiameterMilesMax());
+        Assertions.assertEquals(actual.get(0).getEstimatedDiameterFeet().getDiameterMin(), sampleItem.get(0).getDiameterFeetMin());
+        Assertions.assertEquals(actual.get(0).getEstimatedDiameterFeet().getDiameterMax(), sampleItem.get(0).getDiameterFeetMax());
 
-        Assertions.assertEquals(actual.get(0).getCloseApproaches().size(), sampleItem.get(0).getClosestApproaches().size());
+        Assertions.assertEquals(actual.get(0).getCloseApproaches().size(), sampleCloseApproach.size());
         Assertions.assertEquals(
                 actual.get(0).getCloseApproaches().get(0).getApproachDate(),
-                sampleItem.get(0).getClosestApproaches().get(0).getApproachDate());
+                sampleCloseApproach.get(0).getApproachDate());
         Assertions.assertEquals(
                 actual.get(0).getCloseApproaches().get(0).getApproachDateFull(),
-                sampleItem.get(0).getClosestApproaches().get(0).getApproachDateFull());
+                sampleCloseApproach.get(0).getApproachDateFull());
         Assertions.assertEquals(
                 actual.get(0).getCloseApproaches().get(0).getVelocityKph(),
-                AppUtils.toDouble(sampleItem.get(0).getClosestApproaches().get(0).getRelativeVelocity().getKilometerPerHour(), 0.0));
+                sampleCloseApproach.get(0).getVelocityKph());
         Assertions.assertEquals(
                 actual.get(0).getCloseApproaches().get(0).getVelocityKps(),
-                AppUtils.toDouble(sampleItem.get(0).getClosestApproaches().get(0).getRelativeVelocity().getKilometerPerSecond(), 0.0));
+                sampleCloseApproach.get(0).getVelocityKps());
         Assertions.assertEquals(
                 actual.get(0).getCloseApproaches().get(0).getVelocityMph(),
-                AppUtils.toDouble(sampleItem.get(0).getClosestApproaches().get(0).getRelativeVelocity().getMilesPerSecond(), 0.0));
+                sampleCloseApproach.get(0).getVelocityMph());
         Assertions.assertEquals(
                 actual.get(0).getCloseApproaches().get(0).getDistanceAstronomical(),
-                AppUtils.toDouble(sampleItem.get(0).getClosestApproaches().get(0).getMissDistance().getAstronomical(), 0.0));
+                sampleCloseApproach.get(0).getDistanceAstronomical());
         Assertions.assertEquals(
                 actual.get(0).getCloseApproaches().get(0).getDistanceLunar(),
-                AppUtils.toDouble(sampleItem.get(0).getClosestApproaches().get(0).getMissDistance().getLunar(), 0.0));
+                sampleCloseApproach.get(0).getDistanceLunar());
         Assertions.assertEquals(
                 actual.get(0).getCloseApproaches().get(0).getDistanceKilometers(),
-                AppUtils.toDouble(sampleItem.get(0).getClosestApproaches().get(0).getMissDistance().getKilometers(), 0.0));
+                sampleCloseApproach.get(0).getDistanceKilometers());
         Assertions.assertEquals(
                 actual.get(0).getCloseApproaches().get(0).getDistanceMiles(),
-                AppUtils.toDouble(sampleItem.get(0).getClosestApproaches().get(0).getMissDistance().getMiles(), 0.0));
+                sampleCloseApproach.get(0).getDistanceMiles());
     }
 
     @Test
     public void getNeoFeed_resultData() {
-        List<NeoFeedResponse> sampleResponse = Arrays.asList(
+        LocalDate sampleDate = LocalDate.of(2023, 1, 1);
+        List<NeoFeedResponse> sampleResponse = Collections.singletonList(
                 NeoFeedResponse.builder()
-                        .date(LocalDate.of(2024, 1, 1))
-                        .asteroids(Arrays.asList(NeoFeedItem.builder()
+                        .date(sampleDate)
+                        .asteroids(Collections.singletonList(NeoFeedItem.builder()
                                 .id("001")
                                 .name("Asteroid-001")
                                 .build()))
@@ -203,17 +207,26 @@ class NeoFeedServiceTest {
         NeoFeedApiResponse nasaResponse = NeoFeedApiResponse.builder()
                 .elementCount(1)
                 .nearEarthObjects(Collections.singletonMap(
-                        LocalDate.of(2024, 1, 1),
-                        Arrays.asList(AsteroidObjectApiData.builder()
+                        sampleDate,
+                        Collections.singletonList(AsteroidObjectApiData.builder()
                                 .referenceId("001")
                                 .name("Asteroid-001")
                                 .build()))
                 ).build();
 
+        List<AsteroidTable> sampleDataTable = Collections.singletonList(
+                AsteroidTable.builder()
+                        .referenceId("001")
+                        .name("Asteroid-001")
+                        .approachDate(sampleDate)
+                        .build()
+        );
+
         Mockito.when(nasaApiService.getNeoFeedApi(Mockito.any(), Mockito.any()))
                 .thenReturn(nasaResponse);
+        Mockito.when(asteroidDbService.save(Mockito.any())).thenReturn(sampleDataTable);
 
-        List<NeoFeedResponse> actualResponse = neoFeedService.getNeoFeed(LocalDate.now(), LocalDate.now());
+        List<NeoFeedResponse> actualResponse = neoFeedService.getNeoFeed(sampleDate, sampleDate);
 
         Assertions.assertEquals(actualResponse.get(0).getDate(), sampleResponse.get(0).getDate());
         Assertions.assertEquals(

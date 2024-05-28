@@ -11,6 +11,15 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class AppExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<BaseResponse> runtimeException(RuntimeException exception) {
+        BaseResponse response = BaseResponse.builder()
+                .success(false)
+                .message("Something went wrong")
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<BaseResponse> responseStatusException(ResponseStatusException exception) {
         BaseResponse response = BaseResponse.builder()

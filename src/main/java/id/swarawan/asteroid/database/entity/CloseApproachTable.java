@@ -27,11 +27,15 @@ public class CloseApproachTable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JoinColumn(name = "asteroid_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private AsteroidTable asteroidTable;
+
     @Column(name = "approach_date")
     private LocalDate approachDate;
 
     @Column(name = "approach_date_full")
-    private LocalDateTime approachDateFull;
+    private String approachDateFull;
 
     @Column(name = "velocity_kps")
     private Double velocityKps;

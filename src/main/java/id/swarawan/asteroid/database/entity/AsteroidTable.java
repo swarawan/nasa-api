@@ -37,9 +37,6 @@ public class AsteroidTable {
     @Column(name = "approach_date")
     private LocalDate approachDate;
 
-    @Column(name = "approach_date_full")
-    private LocalDateTime approachDateFull;
-
     @Column(name = "name", nullable = false)
     private String name;
 

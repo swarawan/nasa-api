@@ -53,6 +53,7 @@ create table if not exists `close_approach`
     `id`                    bigint primary key auto_increment not null,
     `asteroid_id`           bigint,
     `approach_date`         datetime,
+    `approach_date_full`  varchar(100),
     `velocity_kps`          double,
     `velocity_kph`          double,
     `velocity_mph`          double,

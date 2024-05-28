@@ -2,7 +2,10 @@ package id.swarawan.asteroid.service.neofeed;
 
 import id.swarawan.asteroid.config.exceptions.BadRequestException;
 import id.swarawan.asteroid.config.utility.AppUtils;
+import id.swarawan.asteroid.database.entity.AsteroidTable;
+import id.swarawan.asteroid.database.entity.CloseApproachTable;
 import id.swarawan.asteroid.database.service.AsteroidDbService;
+import id.swarawan.asteroid.database.service.CloseApproachDbService;
 import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
 import id.swarawan.asteroid.model.api.data.AsteroidObjectApiData;
 import id.swarawan.asteroid.model.api.data.item.EstimatedDiameterApiItem;
@@ -12,12 +15,11 @@ import id.swarawan.asteroid.model.response.item.NeoFeedItem;
 import id.swarawan.asteroid.model.response.NeoFeedResponse;
 import id.swarawan.asteroid.service.nasa.NasaApiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class NeoFeedService {
@@ -25,88 +27,92 @@ public class NeoFeedService {
     private final NasaApiService nasaApiService;
     private final NeoSentryService neoSentryService;
     private final AsteroidDbService asteroidDbService;
+    private final CloseApproachDbService closeApproachDbService;
 
     @Autowired
     public NeoFeedService(NasaApiService nasaApiService,
                           NeoSentryService neoSentryService,
-                          AsteroidDbService asteroidDbService) {
+                          AsteroidDbService asteroidDbService,
+                          CloseApproachDbService closeApproachDbService) {
         this.nasaApiService = nasaApiService;
         this.neoSentryService = neoSentryService;
         this.asteroidDbService = asteroidDbService;
+        this.closeApproachDbService = closeApproachDbService;
     }
 
     public List<NeoFeedResponse> getNeoFeed(LocalDate startDate, LocalDate endDate) throws BadRequestException {
-        List<NeoFeedResponse> result = new ArrayList<>();
-
         validateRequest(startDate, endDate);
-
-        // filter start date
-
         NeoFeedApiResponse neoFeedApiResponse = nasaApiService.getNeoFeedApi(startDate, endDate);
-        neoFeedApiResponse.getNearEarthObjects().forEach((date, data) -> {
-            List<NeoFeedItem> feedItems = collectFeeds(data);
-            NeoFeedResponse item = NeoFeedResponse.builder()
-                    .date(date)
-                    .asteroids(feedItems)
-                    .build();
-            result.add(item);
-        });
-        asteroidDbService.save(result);
+        if (neoFeedApiResponse.getNearEarthObjects().isEmpty()) {
+            return Collections.emptyList();
+        }
 
+        List<AsteroidTable> dataTable = asteroidDbService.save(neoFeedApiResponse.getNearEarthObjects());
+        Set<LocalDate> dates = collectDates(startDate, endDate);
+
+        return dates.stream().map(date -> {
+            List<AsteroidTable> asteroids = dataTable.stream().filter(dt -> dt.getApproachDate().isEqual(date)).toList();
+            return NeoFeedResponse.builder()
+                    .date(date)
+                    .asteroids(collectFeeds(asteroids))
+                    .build();
+
+        }).toList();
+    }
+
+    private Set<LocalDate> collectDates(LocalDate startDate, LocalDate endDate) {
+        Set<LocalDate> result = new HashSet<>();
+        LocalDate tempDate = startDate;
+        while (tempDate.isBefore(endDate) || tempDate.isEqual(endDate)) {
+            result.add(startDate);
+            tempDate = startDate.plusDays(1);
+        }
         return result;
     }
 
-    private List<NeoFeedItem> collectFeeds(List<AsteroidObjectApiData> asteroids) {
+    private List<NeoFeedItem> collectFeeds(List<AsteroidTable> asteroids) {
         return asteroids.stream().map(data -> {
             NeoFeedItem.NeoFeedItemBuilder builder = NeoFeedItem.builder()
                     .id(data.getReferenceId())
                     .name(data.getName())
                     .jplUrl(data.getNasaJplUrl())
                     .absoluteMagnitude(data.getAbsoluteMagnitude())
-                    .isHazardAsteroid(data.getIsHazardousAsteroid())
+                    .isHazardAsteroid(data.getIsHazardPotential())
                     .isSentryObject(data.getIsSentryObject());
 
-            if (!Objects.isNull(data.getSentryData())) {
+            if (!Objects.isNull(data.getIsSentryObject())) {
                 builder.sentryData(neoSentryService.getNeoSentry(data.getReferenceId()));
             }
 
-            if (!Objects.isNull(data.getEstimatedDiameter())) {
-                EstimatedDiameterApiItem estimatedDiameterKm = data.getEstimatedDiameter().getKilometers();
-                builder.estimatedDiameterKm(DiameterItem.builder()
-                        .diameterMin(estimatedDiameterKm.getMin())
-                        .diameterMax(estimatedDiameterKm.getMax())
-                        .build());
+            builder.estimatedDiameterKm(DiameterItem.builder()
+                    .diameterMin(data.getDiameterKmMin())
+                    .diameterMax(data.getDiameterKmMax())
+                    .build());
 
-                EstimatedDiameterApiItem estimatedDiameterMiles = data.getEstimatedDiameter().getMiles();
-                builder.estimatedDiameterMiles(DiameterItem.builder()
-                        .diameterMin(estimatedDiameterMiles.getMin())
-                        .diameterMax(estimatedDiameterMiles.getMax())
-                        .build());
+            builder.estimatedDiameterMiles(DiameterItem.builder()
+                    .diameterMin(data.getDiameterMilesMin())
+                    .diameterMax(data.getDiameterMilesMax())
+                    .build());
 
-                EstimatedDiameterApiItem estimatedDiameterFeet = data.getEstimatedDiameter().getKilometers();
-                builder.estimatedDiameterFeet(DiameterItem.builder()
-                        .diameterMin(estimatedDiameterFeet.getMin())
-                        .diameterMax(estimatedDiameterFeet.getMax())
-                        .build());
-            }
+            builder.estimatedDiameterFeet(DiameterItem.builder()
+                    .diameterMin(data.getDiameterFeetMin())
+                    .diameterMax(data.getDiameterFeetMax())
+                    .build());
 
-            if (!Objects.isNull(data.getClosestApproaches())) {
-                List<CloseApproachItem> closeApproachItems = data.getClosestApproaches()
-                        .stream().map(closeApproach -> CloseApproachItem.builder()
-                                .approachDate(closeApproach.getApproachDate())
-                                .approachDateFull(closeApproach.getApproachDateFull())
-                                .orbitBody(closeApproach.getOrbitBody())
-                                .velocityKps(AppUtils.toDouble(closeApproach.getRelativeVelocity().getKilometerPerSecond(), 0.0))
-                                .velocityKph(AppUtils.toDouble(closeApproach.getRelativeVelocity().getKilometerPerHour(), 0.0))
-                                .velocityMph(AppUtils.toDouble(closeApproach.getRelativeVelocity().getMilesPerSecond(), 0.0))
-                                .distanceAstronomical(AppUtils.toDouble(closeApproach.getMissDistance().getAstronomical(), 0.0))
-                                .distanceLunar(AppUtils.toDouble(closeApproach.getMissDistance().getLunar(), 0.0))
-                                .distanceKilometers(AppUtils.toDouble(closeApproach.getMissDistance().getKilometers(), 0.0))
-                                .distanceMiles(AppUtils.toDouble(closeApproach.getMissDistance().getMiles(), 0.0))
-                                .build())
-                        .toList();
-                builder.closeApproaches(closeApproachItems);
-            }
+            List<CloseApproachTable> closeApproachTables = closeApproachDbService.getByAsteroid(data.getId());
+            List<CloseApproachItem> closeApproachItems = closeApproachTables.stream().map(closeApproach -> CloseApproachItem.builder()
+                    .approachDate(closeApproach.getApproachDate())
+                    .approachDateFull(closeApproach.getApproachDateFull())
+                    .orbitBody(closeApproach.getOrbitingBody())
+                    .velocityKps(closeApproach.getVelocityKps())
+                    .velocityKph(closeApproach.getVelocityKph())
+                    .velocityMph(closeApproach.getVelocityMph())
+                    .distanceAstronomical(closeApproach.getDistanceAstronomical())
+                    .distanceLunar(closeApproach.getDistanceLunar())
+                    .distanceKilometers(closeApproach.getDistanceKilometers())
+                    .distanceMiles(closeApproach.getDistanceMiles())
+                    .build()).toList();
+            builder.closeApproaches(closeApproachItems);
 
             return builder.build();
         }).toList();

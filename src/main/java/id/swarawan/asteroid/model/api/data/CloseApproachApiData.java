@@ -21,7 +21,7 @@ public class CloseApproachApiData {
     private LocalDate approachDate;
 
     @JsonProperty(value = "close_approach_date_full")
-    private LocalDateTime approachDateFull;
+    private String approachDateFull;
 
     @JsonProperty(value = "epoch_date_close_approach")
     private Long approachDateEpoch;

@@ -20,7 +20,7 @@ public class CloseApproachItem {
     private LocalDate approachDate;
 
     @JsonProperty(value = "date_full")
-    private LocalDateTime approachDateFull;
+    private String approachDateFull;
 
     @JsonProperty(value = "velocity_kps")
     private Double velocityKps;
