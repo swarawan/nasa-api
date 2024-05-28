@@ -1,6 +1,7 @@
 package id.swarawan.asteroid.service.neofeed;
 
 import id.swarawan.asteroid.config.exceptions.BadRequestException;
+import id.swarawan.asteroid.config.utility.AppUtils;
 import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
 import id.swarawan.asteroid.model.api.data.AsteroidObjectData;
 import id.swarawan.asteroid.model.api.data.CloseApproachData;
@@ -8,6 +9,7 @@ import id.swarawan.asteroid.model.api.data.EstimatedDiameterData;
 import id.swarawan.asteroid.model.api.data.item.EstimatedDiameterItem;
 import id.swarawan.asteroid.model.api.data.item.MissDistanceItem;
 import id.swarawan.asteroid.model.api.data.item.RelativeVelocityItem;
+import id.swarawan.asteroid.model.response.NeoSentryResponse;
 import id.swarawan.asteroid.model.response.item.NeoFeedItem;
 import id.swarawan.asteroid.model.response.NeoFeedResponse;
 import id.swarawan.asteroid.service.nasa.NasaApiService;
@@ -31,6 +33,9 @@ class NeoFeedServiceTest {
     @Mock
     private NasaApiService nasaApiService;
 
+    @Mock
+    private NeoSentryService neoSentryService;
+
     @InjectMocks
     private NeoFeedService neoFeedService;
 
@@ -43,14 +48,14 @@ class NeoFeedServiceTest {
     public void getNeoFeed_missingStartDate_returnException() {
         BadRequestException exception = Assertions.assertThrows(BadRequestException.class, () ->
                 neoFeedService.getNeoFeed(null, LocalDate.now()));
-        Assertions.assertEquals("Start / end date cannot be null", exception.getMessage());
+        Assertions.assertEquals("Start / end date is required", exception.getMessage());
     }
 
     @Test
     public void getNeoFeed_missingEndDate_throwException() {
         BadRequestException exception = Assertions.assertThrows(BadRequestException.class, () ->
                 neoFeedService.getNeoFeed(LocalDate.now(), null));
-        Assertions.assertEquals("Start / end date cannot be null", exception.getMessage());
+        Assertions.assertEquals("Start / end date is required", exception.getMessage());
     }
 
     @Test
@@ -77,9 +82,6 @@ class NeoFeedServiceTest {
 
     @Test
     public void collectFeeds_success() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Method collectFeedsMethod = neoFeedService.getClass().getDeclaredMethod("collectFeeds", List.class);
-        collectFeedsMethod.setAccessible(true);
-
         EstimatedDiameterItem sampleDiameter = EstimatedDiameterItem.builder().min(1.1).max(2.2).build();
         AsteroidObjectData sampleData = AsteroidObjectData.builder()
                 .id("1")
@@ -112,8 +114,19 @@ class NeoFeedServiceTest {
                         .build()))
                 .isHazardousAsteroid(true)
                 .isSentryObject(true)
+                .sentryData("http:google.com")
+                .build();
+
+        NeoSentryResponse sampleSentry = NeoSentryResponse.builder()
+                .spkId("001")
+                .fullName("OBS")
                 .build();
         List<AsteroidObjectData> sampleItem = Arrays.asList(sampleData);
+
+        Mockito.when(neoSentryService.getNeoSentry(Mockito.anyString())).thenReturn(sampleSentry);
+        Method collectFeedsMethod = neoFeedService.getClass().getDeclaredMethod("collectFeeds", List.class);
+        collectFeedsMethod.setAccessible(true);
+
         List<NeoFeedItem> actual = (List<NeoFeedItem>) collectFeedsMethod.invoke(neoFeedService, sampleItem);
 
         Assertions.assertEquals(actual.size(), sampleItem.size());
@@ -123,6 +136,8 @@ class NeoFeedServiceTest {
         Assertions.assertEquals(actual.get(0).getAbsoluteMagnitude(), sampleItem.get(0).getAbsoluteMagnitude());
         Assertions.assertEquals(actual.get(0).getIsHazardAsteroid(), sampleItem.get(0).getIsHazardousAsteroid());
         Assertions.assertEquals(actual.get(0).getIsSentryObject(), sampleItem.get(0).getIsSentryObject());
+        Assertions.assertEquals(actual.get(0).getSentryData().getSpkId(), sampleSentry.getSpkId());
+        Assertions.assertEquals(actual.get(0).getSentryData().getFullName(), sampleSentry.getFullName());
 
         Assertions.assertEquals(actual.get(0).getEstimatedDiameterKm().getDiameterMin(), sampleItem.get(0).getEstimatedDiameter().getKilometers().getMin());
         Assertions.assertEquals(actual.get(0).getEstimatedDiameterKm().getDiameterMax(), sampleItem.get(0).getEstimatedDiameter().getKilometers().getMax());
@@ -132,19 +147,35 @@ class NeoFeedServiceTest {
         Assertions.assertEquals(actual.get(0).getEstimatedDiameterFeet().getDiameterMax(), sampleItem.get(0).getEstimatedDiameter().getFeet().getMax());
 
         Assertions.assertEquals(actual.get(0).getCloseApproaches().size(), sampleItem.get(0).getClosestApproaches().size());
-        Assertions.assertEquals(actual.get(0).getCloseApproaches().get(0).getApproachDate(), sampleItem.get(0).getClosestApproaches().get(0).getApproachDateFull());
-        Assertions.assertEquals(actual.get(0).getCloseApproaches().get(0).getVelocityKph(), Double.parseDouble(sampleItem.get(0).getClosestApproaches().get(0).getRelativeVelocity().getKilometerPerHour()));
-        Assertions.assertEquals(actual.get(0).getCloseApproaches().get(0).getVelocityKps(), Double.parseDouble(sampleItem.get(0).getClosestApproaches().get(0).getRelativeVelocity().getKilometerPerSecond()));
-        Assertions.assertEquals(actual.get(0).getCloseApproaches().get(0).getVelocityMph(), Double.parseDouble(sampleItem.get(0).getClosestApproaches().get(0).getRelativeVelocity().getMilesPerSecond()));
-        Assertions.assertEquals(actual.get(0).getCloseApproaches().get(0).getDistanceAstronomical(), Double.parseDouble(sampleItem.get(0).getClosestApproaches().get(0).getMissDistance().getAstronomical()));
-        Assertions.assertEquals(actual.get(0).getCloseApproaches().get(0).getDistanceLunar(), Double.parseDouble(sampleItem.get(0).getClosestApproaches().get(0).getMissDistance().getLunar()));
-        Assertions.assertEquals(actual.get(0).getCloseApproaches().get(0).getDistanceKilometers(), Double.parseDouble(sampleItem.get(0).getClosestApproaches().get(0).getMissDistance().getKilometers()));
-        Assertions.assertEquals(actual.get(0).getCloseApproaches().get(0).getDistanceMiles(), Double.parseDouble(sampleItem.get(0).getClosestApproaches().get(0).getMissDistance().getMiles()));
+        Assertions.assertEquals(
+                actual.get(0).getCloseApproaches().get(0).getApproachDate(),
+                sampleItem.get(0).getClosestApproaches().get(0).getApproachDateFull());
+        Assertions.assertEquals(
+                actual.get(0).getCloseApproaches().get(0).getVelocityKph(),
+                AppUtils.toDouble(sampleItem.get(0).getClosestApproaches().get(0).getRelativeVelocity().getKilometerPerHour(), 0.0));
+        Assertions.assertEquals(
+                actual.get(0).getCloseApproaches().get(0).getVelocityKps(),
+                AppUtils.toDouble(sampleItem.get(0).getClosestApproaches().get(0).getRelativeVelocity().getKilometerPerSecond(), 0.0));
+        Assertions.assertEquals(
+                actual.get(0).getCloseApproaches().get(0).getVelocityMph(),
+                AppUtils.toDouble(sampleItem.get(0).getClosestApproaches().get(0).getRelativeVelocity().getMilesPerSecond(), 0.0));
+        Assertions.assertEquals(
+                actual.get(0).getCloseApproaches().get(0).getDistanceAstronomical(),
+                AppUtils.toDouble(sampleItem.get(0).getClosestApproaches().get(0).getMissDistance().getAstronomical(), 0.0));
+        Assertions.assertEquals(
+                actual.get(0).getCloseApproaches().get(0).getDistanceLunar(),
+                AppUtils.toDouble(sampleItem.get(0).getClosestApproaches().get(0).getMissDistance().getLunar(), 0.0));
+        Assertions.assertEquals(
+                actual.get(0).getCloseApproaches().get(0).getDistanceKilometers(),
+                AppUtils.toDouble(sampleItem.get(0).getClosestApproaches().get(0).getMissDistance().getKilometers(), 0.0));
+        Assertions.assertEquals(
+                actual.get(0).getCloseApproaches().get(0).getDistanceMiles(),
+                AppUtils.toDouble(sampleItem.get(0).getClosestApproaches().get(0).getMissDistance().getMiles(), 0.0));
     }
 
     @Test
     public void getNeoFeed_resultData() {
-        List<NeoFeedResponse> sampleRespone = Arrays.asList(
+        List<NeoFeedResponse> sampleResponse = Arrays.asList(
                 NeoFeedResponse.builder()
                         .date("2024-01-01")
                         .asteroids(Arrays.asList(NeoFeedItem.builder()
@@ -169,10 +200,9 @@ class NeoFeedServiceTest {
 
         List<NeoFeedResponse> actualResponse = neoFeedService.getNeoFeed(LocalDate.now(), LocalDate.now());
 
-        Assertions.assertEquals(actualResponse.get(0).getDate(), sampleRespone.get(0).getDate());
+        Assertions.assertEquals(actualResponse.get(0).getDate(), sampleResponse.get(0).getDate());
         Assertions.assertEquals(
                 actualResponse.get(0).getAsteroids().get(0).getId(),
-                sampleRespone.get(0).getAsteroids().get(0).getId());
+                sampleResponse.get(0).getAsteroids().get(0).getId());
     }
-
 }

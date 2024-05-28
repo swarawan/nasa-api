@@ -1,6 +1,7 @@
 package id.swarawan.asteroid.service.nasa;
 
 import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
+import id.swarawan.asteroid.model.api.NeoSentryApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,5 +23,9 @@ public class NasaApiService {
 
     public NeoFeedApiResponse getNeoFeedApi(LocalDate startDate, LocalDate endDate) {
         return nasaApi.getNeoFeedApi(nasaApiKey, startDate.toString(), endDate.toString());
+    }
+
+    public NeoSentryApiResponse getNeoSentry(String referenceId) {
+        return nasaApi.getNeoSentry(nasaApiKey, referenceId);
     }
 }

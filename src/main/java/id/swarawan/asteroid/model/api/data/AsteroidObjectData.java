@@ -40,4 +40,7 @@ public class AsteroidObjectData {
 
     @JsonProperty(value = "is_sentry_object")
     private Boolean isSentryObject;
+
+    @JsonProperty(value = "sentry_data")
+    private String sentryData;
 }

@@ -1,9 +1,11 @@
 package id.swarawan.asteroid.service.neofeed;
 
 import id.swarawan.asteroid.config.exceptions.BadRequestException;
+import id.swarawan.asteroid.config.utility.AppUtils;
 import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
 import id.swarawan.asteroid.model.api.data.AsteroidObjectData;
 import id.swarawan.asteroid.model.api.data.item.EstimatedDiameterItem;
+import id.swarawan.asteroid.model.response.NeoSentryResponse;
 import id.swarawan.asteroid.model.response.item.CloseApproachItem;
 import id.swarawan.asteroid.model.response.item.DiameterItem;
 import id.swarawan.asteroid.model.response.item.NeoFeedItem;
@@ -21,10 +23,12 @@ import java.util.Objects;
 public class NeoFeedService {
 
     private final NasaApiService nasaApiService;
+    private final NeoSentryService neoSentryService;
 
     @Autowired
-    public NeoFeedService(NasaApiService nasaApiService) {
+    public NeoFeedService(NasaApiService nasaApiService, NeoSentryService neoSentryService) {
         this.nasaApiService = nasaApiService;
+        this.neoSentryService = neoSentryService;
     }
 
     public List<NeoFeedResponse> getNeoFeed(LocalDate startDate, LocalDate endDate) throws BadRequestException {
@@ -56,6 +60,10 @@ public class NeoFeedService {
                     .isHazardAsteroid(data.getIsHazardousAsteroid())
                     .isSentryObject(data.getIsSentryObject());
 
+            if (!Objects.isNull(data.getSentryData())) {
+                builder.sentryData(neoSentryService.getNeoSentry(data.getReferenceId()));
+            }
+
             if (!Objects.isNull(data.getEstimatedDiameter())) {
                 EstimatedDiameterItem estimatedDiameterKm = data.getEstimatedDiameter().getKilometers();
                 builder.estimatedDiameterKm(DiameterItem.builder()
@@ -81,13 +89,13 @@ public class NeoFeedService {
                         .stream().map(closeApproach -> CloseApproachItem.builder()
                                 .approachDate(closeApproach.getApproachDateFull())
                                 .orbitBody(closeApproach.getOrbitBody())
-                                .velocityKps(Double.parseDouble(closeApproach.getRelativeVelocity().getKilometerPerSecond()))
-                                .velocityKph(Double.parseDouble(closeApproach.getRelativeVelocity().getKilometerPerHour()))
-                                .velocityMph(Double.parseDouble(closeApproach.getRelativeVelocity().getMilesPerSecond()))
-                                .distanceAstronomical(Double.parseDouble(closeApproach.getMissDistance().getAstronomical()))
-                                .distanceLunar(Double.parseDouble(closeApproach.getMissDistance().getLunar()))
-                                .distanceKilometers(Double.parseDouble(closeApproach.getMissDistance().getKilometers()))
-                                .distanceMiles(Double.parseDouble(closeApproach.getMissDistance().getMiles()))
+                                .velocityKps(AppUtils.toDouble(closeApproach.getRelativeVelocity().getKilometerPerSecond(), 0.0))
+                                .velocityKph(AppUtils.toDouble(closeApproach.getRelativeVelocity().getKilometerPerHour(), 0.0))
+                                .velocityMph(AppUtils.toDouble(closeApproach.getRelativeVelocity().getMilesPerSecond(), 0.0))
+                                .distanceAstronomical(AppUtils.toDouble(closeApproach.getMissDistance().getAstronomical(), 0.0))
+                                .distanceLunar(AppUtils.toDouble(closeApproach.getMissDistance().getLunar(), 0.0))
+                                .distanceKilometers(AppUtils.toDouble(closeApproach.getMissDistance().getKilometers(), 0.0))
+                                .distanceMiles(AppUtils.toDouble(closeApproach.getMissDistance().getMiles(), 0.0))
                                 .build())
                         .toList();
                 builder.closeApproaches(closeApproachItems);
@@ -95,12 +103,11 @@ public class NeoFeedService {
 
             return builder.build();
         }).toList();
-
     }
 
     private void validateRequest(LocalDate startDate, LocalDate endDate) throws BadRequestException {
         if (Objects.isNull(startDate) || Objects.isNull(endDate)) {
-            throw new BadRequestException("Start / end date cannot be null");
+            throw new BadRequestException("Start / end date is required");
         } else if (startDate.isAfter(endDate)) {
             throw new BadRequestException("Start date cannot more than end date");
         }
