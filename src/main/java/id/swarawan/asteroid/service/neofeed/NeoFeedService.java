@@ -1,6 +1,7 @@
 package id.swarawan.asteroid.service.neofeed;
 
 import id.swarawan.asteroid.config.exceptions.BadRequestException;
+import id.swarawan.asteroid.config.exceptions.NotFoundException;
 import id.swarawan.asteroid.database.entity.AsteroidTable;
 import id.swarawan.asteroid.database.entity.CloseApproachTable;
 import id.swarawan.asteroid.database.service.AsteroidDbService;
@@ -9,9 +10,10 @@ import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
 import id.swarawan.asteroid.model.api.NeoLookupApiResponse;
 import id.swarawan.asteroid.model.response.item.CloseApproachItem;
 import id.swarawan.asteroid.model.response.item.DiameterItem;
-import id.swarawan.asteroid.model.response.item.NeoFeedItem;
+import id.swarawan.asteroid.model.response.NeoLookupResponse;
 import id.swarawan.asteroid.model.response.NeoFeedResponse;
 import id.swarawan.asteroid.service.nasa.NasaApiService;
+import id.swarawan.asteroid.service.neolookup.NeoLookupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,19 +24,19 @@ import java.util.*;
 public class NeoFeedService {
 
     private final NasaApiService nasaApiService;
-    private final NeoSentryService neoSentryService;
     private final AsteroidDbService asteroidDbService;
     private final CloseApproachDbService closeApproachDbService;
+    private final NeoLookupService neoLookupService;
 
     @Autowired
     public NeoFeedService(NasaApiService nasaApiService,
-                          NeoSentryService neoSentryService,
                           AsteroidDbService asteroidDbService,
-                          CloseApproachDbService closeApproachDbService) {
+                          CloseApproachDbService closeApproachDbService,
+                          NeoLookupService neoLookupService) {
         this.nasaApiService = nasaApiService;
-        this.neoSentryService = neoSentryService;
         this.asteroidDbService = asteroidDbService;
         this.closeApproachDbService = closeApproachDbService;
+        this.neoLookupService = neoLookupService;
     }
 
     public List<NeoFeedResponse> getNeoFeed(LocalDate startDate, LocalDate endDate) throws BadRequestException {
@@ -50,7 +52,7 @@ public class NeoFeedService {
             } else {
                 result.add(NeoFeedResponse.builder()
                         .date(date)
-                        .asteroids(collectFeeds(dataTable))
+                        .asteroids(generateNeoLookup(dataTable))
                         .build());
             }
         });
@@ -60,42 +62,23 @@ public class NeoFeedService {
             for (LocalDate date : emptyDates) {
                 endDate = date;
             }
-            NeoFeedApiResponse neoFeedApiResponse = nasaApiService.getNeoFeedApi(startDate, endDate);
+            NeoFeedApiResponse neoFeedApiResponse = nasaApiService.getNeoFeedApi(startDate, endDate)
+                    .orElseThrow(() -> new NotFoundException("Data not found"));
             Map<LocalDate, List<NeoLookupApiResponse>> nearEarthObjects = neoFeedApiResponse.getNearEarthObjects();
             if (!nearEarthObjects.isEmpty()) {
-                asteroidDbService.save(nearEarthObjects);
+                asteroidDbService.saveAll(nearEarthObjects);
             }
 
             emptyDates.forEach(date -> {
                 List<AsteroidTable> dataTable = asteroidDbService.findByApproachDate(date);
                 result.add(NeoFeedResponse.builder()
                         .date(date)
-                        .asteroids(collectFeeds(dataTable))
+                        .asteroids(generateNeoLookup(dataTable))
                         .build());
             });
         }
         return result.stream().sorted(Comparator.comparing(NeoFeedResponse::getDate)).toList();
     }
-
-//    public List<NeoFeedResponse> getNeoFeed(LocalDate startDate, LocalDate endDate) throws BadRequestException {
-//        validateRequest(startDate, endDate);
-//        NeoFeedApiResponse neoFeedApiResponse = nasaApiService.getNeoFeedApi(startDate, endDate);
-//        if (neoFeedApiResponse.getNearEarthObjects().isEmpty()) {
-//            return Collections.emptyList();
-//        }
-//
-//        asteroidDbService.save(neoFeedApiResponse.getNearEarthObjects());
-//        Set<LocalDate> dates = collectDates(startDate, endDate);
-//
-//        return dates.stream().map(date -> {
-//            List<AsteroidTable> asteroids = dataTable.stream().filter(dt -> dt.getApproachDate().isEqual(date)).toList();
-//            return NeoFeedResponse.builder()
-//                    .date(date)
-//                    .asteroids(collectFeeds(asteroids))
-//                    .build();
-//
-//        }).toList();
-//    }
 
     private Set<LocalDate> collectDates(LocalDate startDate, LocalDate endDate) {
         Set<LocalDate> result = new HashSet<>();
@@ -107,51 +90,10 @@ public class NeoFeedService {
         return result;
     }
 
-    private List<NeoFeedItem> collectFeeds(List<AsteroidTable> asteroids) {
+    private List<NeoLookupResponse> generateNeoLookup(List<AsteroidTable> asteroids) {
         return asteroids.stream().map(data -> {
-            NeoFeedItem.NeoFeedItemBuilder builder = NeoFeedItem.builder()
-                    .id(data.getReferenceId())
-                    .name(data.getName())
-                    .jplUrl(data.getNasaJplUrl())
-                    .absoluteMagnitude(data.getAbsoluteMagnitude())
-                    .isHazardAsteroid(data.getIsHazardPotential())
-                    .isSentryObject(data.getIsSentryObject());
-
-            if (data.getIsSentryObject()) {
-                builder.sentryData(neoSentryService.getNeoSentry(data.getReferenceId()));
-            }
-
-            builder.estimatedDiameterKm(DiameterItem.builder()
-                    .diameterMin(data.getDiameterKmMin())
-                    .diameterMax(data.getDiameterKmMax())
-                    .build());
-
-            builder.estimatedDiameterMiles(DiameterItem.builder()
-                    .diameterMin(data.getDiameterMilesMin())
-                    .diameterMax(data.getDiameterMilesMax())
-                    .build());
-
-            builder.estimatedDiameterFeet(DiameterItem.builder()
-                    .diameterMin(data.getDiameterFeetMin())
-                    .diameterMax(data.getDiameterFeetMax())
-                    .build());
-
             List<CloseApproachTable> closeApproachTables = closeApproachDbService.findByReferenceId(data.getReferenceId());
-            List<CloseApproachItem> closeApproachItems = closeApproachTables.stream().map(closeApproach -> CloseApproachItem.builder()
-                    .approachDate(closeApproach.getApproachDate())
-                    .approachDateFull(closeApproach.getApproachDateFull())
-                    .orbitBody(closeApproach.getOrbitingBody())
-                    .velocityKps(closeApproach.getVelocityKps())
-                    .velocityKph(closeApproach.getVelocityKph())
-                    .velocityMph(closeApproach.getVelocityMph())
-                    .distanceAstronomical(closeApproach.getDistanceAstronomical())
-                    .distanceLunar(closeApproach.getDistanceLunar())
-                    .distanceKilometers(closeApproach.getDistanceKilometers())
-                    .distanceMiles(closeApproach.getDistanceMiles())
-                    .build()).toList();
-            builder.closeApproaches(closeApproachItems);
-
-            return builder.build();
+            return neoLookupService.generateResponse(data, closeApproachTables);
         }).toList();
     }
 

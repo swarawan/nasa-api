@@ -1,17 +1,15 @@
 package id.swarawan.asteroid.database.repository;
 
-import id.swarawan.asteroid.database.entity.SentryTable;
+import id.swarawan.asteroid.database.entity.OrbitTable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
-public interface SentryDataRepository extends JpaRepository<SentryTable, Long> {
+public interface OrbitDataRepository extends JpaRepository<OrbitTable, Long> {
 
     @Query(nativeQuery = true,
-    value = "SELECT * FROM sentry_data WHERE spk_id = :spk_id AND deleted_at is null")
-    SentryTable findBySpkId(@Param("spk_id") String spkId);
+    value = "SELECT * FROM orbit_data WHERE reference_id = :referenceId")
+    OrbitTable findByReference(@Param("referenceId") String reference);
 }

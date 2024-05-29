@@ -16,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Optional;
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class NeoSentryServiceTest {
 
@@ -64,7 +66,7 @@ class NeoSentryServiceTest {
                 .fullName("OBS")
                 .build();
 
-        Mockito.when(nasaApiService.getNeoSentry(Mockito.anyString())).thenReturn(apiResponse);
+        Mockito.when(nasaApiService.getNeoSentry(Mockito.anyString())).thenReturn(Optional.of(apiResponse));
 
         NeoSentryResponse actual = neoSentryService.getNeoSentry("abcd1234");
 

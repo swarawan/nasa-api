@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Optional;
 
 class NasaApiServiceTest {
 
@@ -37,8 +38,9 @@ class NasaApiServiceTest {
         Mockito.when(nasaApi.getNeoFeedApi(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
                 .then(answer -> sampleResponse);
 
-        NeoFeedApiResponse actualResponse = nasaApiService.getNeoFeedApi(LocalDate.now(), LocalDate.now());
-        Assertions.assertEquals(actualResponse.getElementCount(), sampleResponse.getElementCount());
+        Optional<NeoFeedApiResponse> actualResponse = nasaApiService.getNeoFeedApi(LocalDate.now(), LocalDate.now());
+        Assertions.assertTrue(actualResponse.isPresent());
+        Assertions.assertEquals(actualResponse.get().getElementCount(), sampleResponse.getElementCount());
     }
 
     @Test
@@ -63,16 +65,17 @@ class NasaApiServiceTest {
                 .build();
 
         ReflectionTestUtils.setField(nasaApiService, "nasaApiKey", "abcd1234");
-        Mockito.when(nasaApi.getNeoSentry(Mockito.anyString(),Mockito.anyString())).then(answer -> sampleResponse);
+        Mockito.when(nasaApi.getNeoSentry(Mockito.anyString(), Mockito.anyString())).then(answer -> sampleResponse);
 
-        NeoSentryApiResponse actualResponse = nasaApiService.getNeoSentry("abcd1234");
-        Assertions.assertEquals(actualResponse.getSpkId(), sampleResponse.getSpkId());
+        Optional<NeoSentryApiResponse> actualResponse = nasaApiService.getNeoSentry("abcd1234");
+        Assertions.assertTrue(actualResponse.isPresent());
+        Assertions.assertEquals(actualResponse.get().getSpkId(), sampleResponse.getSpkId());
     }
 
     @Test
     public void getNeoSentry_failed_return404() {
         ReflectionTestUtils.setField(nasaApiService, "nasaApiKey", "abcd1234");
-        Mockito.when(nasaApi.getNeoSentry(Mockito.anyString(),Mockito.anyString()))
+        Mockito.when(nasaApi.getNeoSentry(Mockito.anyString(), Mockito.anyString()))
                 .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
 
 

@@ -18,13 +18,13 @@ import java.util.List;
         value = "/nasa/neofeed",
         consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
-public class NasaController {
+public class NeoFeedController {
 
     private final NeoFeedService neoFeedService;
     private final NeoSentryService neoSentryService;
 
     @Autowired
-    public NasaController(NeoFeedService neoFeedService, NeoSentryService neoSentryService) {
+    public NeoFeedController(NeoFeedService neoFeedService, NeoSentryService neoSentryService) {
         this.neoFeedService = neoFeedService;
         this.neoSentryService = neoSentryService;
     }

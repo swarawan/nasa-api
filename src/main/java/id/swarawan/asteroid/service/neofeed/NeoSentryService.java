@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class NeoSentryService {
@@ -34,29 +35,30 @@ public class NeoSentryService {
             return convert(sentryTables);
         }
 
-        NeoSentryApiResponse apiResponse = nasaApiService.getNeoSentry(referenceId);
-        if (Objects.isNull(apiResponse)) {
+        Optional<NeoSentryApiResponse> apiResponse = nasaApiService.getNeoSentry(referenceId);
+        if (apiResponse.isEmpty()) {
             return null;
         }
+        NeoSentryApiResponse apiData = apiResponse.get();
         SentryTable newSentry = SentryTable.builder()
-                .spkId(apiResponse.getSpkId())
-                .designation(apiResponse.getDesignation())
-                .sentryId(apiResponse.getSentryId())
-                .name(apiResponse.getFullName())
-                .yearRangeMin(AppUtils.toInt(apiResponse.getYearRangeMin(), 0))
-                .yearRangeMax(AppUtils.toInt(apiResponse.getYearRangeMax(), 0))
-                .potentialImpact(AppUtils.toInt(apiResponse.getPotentialImpacts(), 0))
-                .impactProbability(apiResponse.getImpactProbability())
-                .vInfinite(AppUtils.toDouble(apiResponse.getInfinity(), 0.0))
-                .absoluteMagnitude(AppUtils.toDouble(apiResponse.getAbsoluteMagnitude(), 0.0))
-                .estimatedDiameter(AppUtils.toDouble(apiResponse.getEstimatedDiameter(), 0.0))
-                .palermoScaleAve(AppUtils.toDouble(apiResponse.getPalermoScaleAve(), 0.0))
-                .palermoScaleMax(AppUtils.toDouble(apiResponse.getPalermoScaleMax(), 0.0))
-                .torinoScale(AppUtils.toInt(apiResponse.getTorinoScale(), 0))
-                .lastObs(apiResponse.getLastObs())
-                .lastObsJd(AppUtils.toDouble(apiResponse.getLastObsJd(), 0.0))
-                .impactDetailsUrl(apiResponse.getUrlImpactDetails())
-                .orbitalElementDetailsUrl(apiResponse.getUrlOrbitalElementDetails())
+                .spkId(apiData.getSpkId())
+                .designation(apiData.getDesignation())
+                .sentryId(apiData.getSentryId())
+                .name(apiData.getFullName())
+                .yearRangeMin(AppUtils.toInt(apiData.getYearRangeMin(), 0))
+                .yearRangeMax(AppUtils.toInt(apiData.getYearRangeMax(), 0))
+                .potentialImpact(AppUtils.toInt(apiData.getPotentialImpacts(), 0))
+                .impactProbability(apiData.getImpactProbability())
+                .vInfinite(AppUtils.toDouble(apiData.getInfinity(), 0.0))
+                .absoluteMagnitude(AppUtils.toDouble(apiData.getAbsoluteMagnitude(), 0.0))
+                .estimatedDiameter(AppUtils.toDouble(apiData.getEstimatedDiameter(), 0.0))
+                .palermoScaleAve(AppUtils.toDouble(apiData.getPalermoScaleAve(), 0.0))
+                .palermoScaleMax(AppUtils.toDouble(apiData.getPalermoScaleMax(), 0.0))
+                .torinoScale(AppUtils.toInt(apiData.getTorinoScale(), 0))
+                .lastObs(apiData.getLastObs())
+                .lastObsJd(AppUtils.toDouble(apiData.getLastObsJd(), 0.0))
+                .impactDetailsUrl(apiData.getUrlImpactDetails())
+                .orbitalElementDetailsUrl(apiData.getUrlOrbitalElementDetails())
                 .build();
         sentryDataRepository.save(newSentry);
         return convert(newSentry);

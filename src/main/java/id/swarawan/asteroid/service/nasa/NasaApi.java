@@ -2,6 +2,7 @@ package id.swarawan.asteroid.service.nasa;
 
 import id.swarawan.asteroid.config.openfeign.OpenFeignConfig;
 import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
+import id.swarawan.asteroid.model.api.NeoLookupApiResponse;
 import id.swarawan.asteroid.model.api.NeoSentryApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +24,6 @@ public interface NasaApi {
                                       @PathVariable("reference_id") String referenceId);
 
     @GetMapping("/neo/rest/v1/neo/{reference_id}")
-    NeoFeedApiResponse getNeoLookup(@RequestParam("api_key") String key,
-                                      @PathVariable("") String referenceId);
+    NeoLookupApiResponse getNeoLookup(@RequestParam("api_key") String key,
+                                      @PathVariable("reference_id") String referenceId);
 }

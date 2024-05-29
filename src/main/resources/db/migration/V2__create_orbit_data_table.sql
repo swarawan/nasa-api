@@ -3,7 +3,7 @@ create table if not exists `orbit_data`
     `id`                          bigint primary key auto_increment not null,
     `reference_id`                varchar(256),
     `orbit_id`                    varchar(100),
-    `orbit_determination_date`    datetime,
+    `orbit_determination_date`    varchar(100),
     `first_observation_date`      datetime,
     `last_observation_date`       datetime,
     `data_arc_in_days`            int,

@@ -2,7 +2,6 @@ package id.swarawan.asteroid.model.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import id.swarawan.asteroid.model.response.item.NeoFeedItem;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,5 +21,5 @@ public class NeoFeedResponse {
     private LocalDate date;
 
     @JsonProperty(value = "asteroids")
-    private List<NeoFeedItem> asteroids;
+    private List<NeoLookupResponse> asteroids;
 }

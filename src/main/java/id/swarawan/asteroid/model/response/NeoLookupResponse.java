@@ -1,8 +1,10 @@
-package id.swarawan.asteroid.model.response.item;
+package id.swarawan.asteroid.model.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import id.swarawan.asteroid.model.response.NeoSentryResponse;
+import id.swarawan.asteroid.model.response.item.CloseApproachItem;
+import id.swarawan.asteroid.model.response.item.DiameterItem;
+import id.swarawan.asteroid.model.response.item.OrbitalItem;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class NeoFeedItem {
+public class NeoLookupResponse {
 
     @JsonProperty(value = "id")
     private String id;
@@ -40,6 +42,9 @@ public class NeoFeedItem {
 
     @JsonProperty(value = "close_approaches")
     private List<CloseApproachItem> closeApproaches;
+
+    @JsonProperty(value = "orbit_data")
+    private OrbitalItem orbitData;
 
     @JsonProperty(value = "is_hazard_asteroid")
     private Boolean isHazardAsteroid;

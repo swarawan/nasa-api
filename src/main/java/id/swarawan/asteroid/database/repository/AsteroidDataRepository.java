@@ -13,14 +13,14 @@ import java.util.List;
 public interface AsteroidDataRepository extends JpaRepository<AsteroidTable, Long> {
 
     @Query(nativeQuery = true,
-            value = "SELECT EXISTS(SELECT 1 FROM asteroid_data WHERE approach_date = :date)")
+            value = "SELECT EXISTS(SELECT 1 FROM asteroid_data WHERE approach_date = :date AND deleted_at is null)")
     long existsByDate(@Param("date") String date);
 
     @Query(nativeQuery = true,
-            value = "SELECT * FROM asteroid_data WHERE approach_date between :start AND :end")
-    List<AsteroidTable> getAllByRange(@Param("start") LocalDate start, @Param("end") LocalDate end);
+            value = "SELECT * FROM asteroid_data WHERE reference_id = :reference_id")
+    AsteroidTable findByReferenceId(@Param("reference_id") String referenceId);
 
     @Query(nativeQuery = true,
-            value = "SELECT * FROM asteroid_data WHERE approach_date = :date")
+            value = "SELECT * FROM asteroid_data WHERE approach_date = :date AND deleted_at is null")
     List<AsteroidTable> findByApproachDate(@Param("date") LocalDate date);
 }

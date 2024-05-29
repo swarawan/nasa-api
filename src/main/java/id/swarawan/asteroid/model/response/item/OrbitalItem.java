@@ -1,8 +1,8 @@
-package id.swarawan.asteroid.model.api.data;
+package id.swarawan.asteroid.model.response.item;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import id.swarawan.asteroid.model.api.data.item.OrbitApiItem;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrbitalApiData {
+public class OrbitalItem {
 
     @JsonProperty(value = "orbit_id")
     private String orbitId;
@@ -36,53 +36,59 @@ public class OrbitalApiData {
     private Integer observationsUsed;
 
     @JsonProperty(value = "orbit_uncertainty")
-    private String orbitUncertainty;
+    private Double orbitUncertainty;
 
     @JsonProperty(value = "minimum_orbit_intersection")
-    private String minimum_orbitIntersection;
+    private Double minimum_orbitIntersection;
 
     @JsonProperty(value = "jupiter_tisserand_invariant")
-    private String jupiterTisserandInvariant;
+    private Double jupiterTisserandInvariant;
 
     @JsonProperty(value = "epoch_osculation")
-    private String epochOsculation;
+    private Double epochOsculation;
 
     @JsonProperty(value = "eccentricity")
-    private String eccentricity;
+    private Double eccentricity;
 
     @JsonProperty(value = "semi_major_axis")
-    private String semiMajorAxis;
+    private Double semiMajorAxis;
 
     @JsonProperty(value = "inclination")
-    private String inclination;
+    private Double inclination;
 
     @JsonProperty(value = "ascending_node_longitude")
-    private String ascendingNodeLongitude;
+    private Double ascendingNodeLongitude;
 
     @JsonProperty(value = "orbital_period")
-    private String orbitalPeriod;
+    private Double orbitalPeriod;
 
     @JsonProperty(value = "perihelion_distance")
-    private String perihelionDistance;
+    private Double perihelionDistance;
 
     @JsonProperty(value = "perihelion_argument")
-    private String perihelionArgument;
+    private Double perihelionArgument;
 
     @JsonProperty(value = "aphelion_distance")
-    private String aphelionDistance;
+    private Double aphelionDistance;
 
     @JsonProperty(value = "perihelion_time")
-    private String perihelionTime;
+    private Double perihelionTime;
 
     @JsonProperty(value = "mean_anomaly")
-    private String meanAnomaly;
+    private Double meanAnomaly;
 
     @JsonProperty(value = "mean_motion")
-    private String meanMotion;
+    private Double meanMotion;
 
     @JsonProperty(value = "equinox")
     private String equinox;
 
-    @JsonProperty(value = "orbit_class")
-    OrbitApiItem orbitClass;
+    @JsonProperty(value = "orbit_class_type")
+    private String orbitClassType;
+
+    @JsonProperty(value = "orbit_class_description")
+    private String orbitClassDescription;
+
+    @JsonProperty(value = "orbit_class_range")
+    private String orbitClassRange;
 }

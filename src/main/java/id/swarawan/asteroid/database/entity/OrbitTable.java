@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "orbit_data")
 @DynamicInsert
@@ -23,6 +26,9 @@ public class OrbitTable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "reference_id")
+    private String referenceId;
+
     @Column(name = "orbit_id")
     private String orbitId;
 
@@ -30,62 +36,71 @@ public class OrbitTable {
     private String orbitDeterminationDate;
 
     @Column(name = "first_observation_date")
-    private String firstObservationDate;
+    private LocalDate firstObservationDate;
 
     @Column(name = "last_observation_date")
-    private String lastObservationDate;
+    private LocalDate lastObservationDate;
 
     @Column(name = "data_arc_in_days")
-    private float dataArcInDays;
+    private Integer dataArcInDays;
 
     @Column(name = "observations_used")
-    private float observationsUsed;
+    private Integer observationsUsed;
 
     @Column(name = "orbit_uncertainty")
-    private String orbitUncertainty;
+    private Double orbitUncertainty;
 
     @Column(name = "minimum_orbit_intersection")
-    private String minimum_orbitIntersection;
+    private Double minimum_orbitIntersection;
 
     @Column(name = "jupiter_tisserand_invariant")
-    private String jupiterTisserandInvariant;
+    private Double jupiterTisserandInvariant;
 
     @Column(name = "epoch_osculation")
-    private String epochOsculation;
+    private Double epochOsculation;
 
     @Column(name = "eccentricity")
-    private String eccentricity;
+    private Double eccentricity;
 
     @Column(name = "semi_major_axis")
-    private String semiMajorAxis;
+    private Double semiMajorAxis;
 
     @Column(name = "inclination")
-    private String inclination;
+    private Double inclination;
 
     @Column(name = "ascending_node_longitude")
-    private String ascendingNodeLongitude;
+    private Double ascendingNodeLongitude;
 
     @Column(name = "orbital_period")
-    private String orbitalPeriod;
+    private Double orbitalPeriod;
 
     @Column(name = "perihelion_distance")
-    private String perihelionDistance;
+    private Double perihelionDistance;
 
     @Column(name = "perihelion_argument")
-    private String perihelionArgument;
+    private Double perihelionArgument;
 
     @Column(name = "aphelion_distance")
-    private String aphelionDistance;
+    private Double aphelionDistance;
 
     @Column(name = "perihelion_time")
-    private String perihelionTime;
+    private Double perihelionTime;
 
     @Column(name = "mean_anomaly")
-    private String meanAnomaly;
+    private Double meanAnomaly;
 
     @Column(name = "mean_motion")
-    private String meanMotion;
+    private Double meanMotion;
 
     @Column(name = "equinox")
     private String equinox;
+
+    @Column(name = "orbit_class_type")
+    private String orbitClassType;
+
+    @Column(name = "orbit_class_description")
+    private String orbitClassDescription;
+
+    @Column(name = "orbit_class_range")
+    private String orbitClassRange;
 }

@@ -42,7 +42,7 @@ public class NeoLookupApiResponse {
     private List<CloseApproachApiData> closestApproaches;
 
     @JsonProperty(value = "orbital_data")
-    private List<OrbitalApiData> orbitalData;
+    private OrbitalApiData orbitalData;
 
     @JsonProperty(value = "is_sentry_object")
     private Boolean isSentryObject;

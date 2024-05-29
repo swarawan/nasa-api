@@ -6,7 +6,7 @@ import id.swarawan.asteroid.database.entity.CloseApproachTable;
 import id.swarawan.asteroid.database.service.AsteroidDbService;
 import id.swarawan.asteroid.database.service.CloseApproachDbService;
 import id.swarawan.asteroid.model.response.NeoSentryResponse;
-import id.swarawan.asteroid.model.response.item.NeoFeedItem;
+import id.swarawan.asteroid.model.response.NeoLookupResponse;
 import id.swarawan.asteroid.service.nasa.NasaApiService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,9 +29,6 @@ class NeoFeedServiceTest {
 
     @Mock
     private NasaApiService nasaApiService;
-
-    @Mock
-    private NeoSentryService neoSentryService;
 
     @Mock
     private AsteroidDbService asteroidDbService;
@@ -132,12 +129,11 @@ class NeoFeedServiceTest {
                 .distanceMiles(12.1)
                 .build());
 
-        Mockito.when(neoSentryService.getNeoSentry(Mockito.anyString())).thenReturn(sampleSentry);
         Mockito.when(closeApproachDbService.findByReferenceId(Mockito.anyString())).thenReturn(sampleCloseApproach);
         Method collectFeedsMethod = neoFeedService.getClass().getDeclaredMethod("collectFeeds", List.class);
         collectFeedsMethod.setAccessible(true);
 
-        List<NeoFeedItem> actual = (List<NeoFeedItem>) collectFeedsMethod.invoke(neoFeedService, sampleItem);
+        List<NeoLookupResponse> actual = (List<NeoLookupResponse>) collectFeedsMethod.invoke(neoFeedService, sampleItem);
 
         Assertions.assertEquals(actual.size(), sampleItem.size());
         Assertions.assertEquals(actual.get(0).getId(), sampleItem.get(0).getReferenceId());
