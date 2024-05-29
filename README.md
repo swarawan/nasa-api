@@ -2,35 +2,72 @@
 
 This project is a Java Based Application that utilize NASA Asteroid API.
 
-### Built with
-
----
-
-- Java 17
-- Spring Boot 3
-- MySQL 8
-- Docker
-- Docker Compose
-
 ## Getting Started
 
 --- 
+
+This part is containing of instruction on setting up your machine and project locally.
 
 ### Prerequisites
 
 Makes sure your machine is installed with below applications:
 
-- Must be installed with Java 17. [Click here to download.](https://www.oracle.com/id/java/technologies/downloads/)
-- Must be installed with MySQL 8. [Click here to download.](https://dev.mysql.com/downloads/installer/)
-- Must be installed with Docker and Docker
-  Compose  [Click here for the instruction.](https://docs.docker.com/engine/install/)
+- Java 17. [Click here to download.](https://www.oracle.com/id/java/technologies/downloads/)
+- MySQL 8. [Click here to download.](https://dev.mysql.com/downloads/installer/)
+- Maven. [Click here to read the instruction.](https://maven.apache.org/install.html)
+- Docker and Docker Compose  [Click here to read the instruction.](https://docs.docker.com/engine/install/)
 
 ### NASA API Key
 
 This project required to have a NASA API Key to run. Generate your own api key [here](https://api.nasa.gov/).
-Then put it in `nasa-api` located in `src/main/resources/application.properties`.
+
+## How to Run
+
+---
+
+To run this project locally, follow these instruction steps:
+
+1. Clone the repository
+
+```git
+git clone git@github.com:swarawan/nasa-api.git
+```
+
+2. Put Nasa API-Key to `application.yml` file
+
+```yaml
+...
+...
+  nasa-api={put-your-api-key-here}
+```
+
+3. To run on docker engine, run this command
+
+```shell
+chmod +x asteroid.sh
+./asteroid.sh run
+```
+
+More about `asteroid.sh` can be read in the section below
+
+### Asteroid.sh
+
+Shell script to easier developer manage this project. To use the command just run
+
+```shell
+./asteroid.sh <command>
+```
+
+| Command                | Description                                                                                 |
+|------------------------|---------------------------------------------------------------------------------------------|
+| build                  | Build this application to docker image                                                      |
+| run                    | Run the image to docker engine                                                              |
+| clean                  | Clean unused images                                                                         |
+| install <service-name> | Install additional tools like MySQL, Redis, etc. All service includes in `compose.yml` file |
 
 ## Features
+
+--- 
 
 ### 1. Feed API
 
@@ -108,6 +145,7 @@ This API will look up a specific Asteroid based on [NASA JPL](https://ssd.jpl.na
 | reference_id | Asteroid SPK-ID correlates to the NASA JPL Small Body | string | required |
 
 #### Response
+
 ```json
 {
   "success": true,

@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  nasa-asteroid:
+    image: nasa-asteroid:latest
+    container_name: nasa-asteroid
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      DB_HOST: host.docker.internal
+      DB_PORT: 3306
+    ports:
+      - "8080:8080"
+
+  mysql:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: root
+    ports:
+      - "3306:3306"
+    networks:
+      - local
+
+networks:
+  local:
+    driver: bridge
