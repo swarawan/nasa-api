@@ -1,10 +1,10 @@
-package id.swarawan.asteroid.service.neofeed;
+package id.swarawan.asteroid.service.feeds;
 
 import id.swarawan.asteroid.config.exceptions.BadRequestException;
-import id.swarawan.asteroid.config.exceptions.NotFoundException;
 import id.swarawan.asteroid.config.utility.AppUtils;
 import id.swarawan.asteroid.database.entity.SentryTable;
 import id.swarawan.asteroid.database.repository.SentryDataRepository;
+import id.swarawan.asteroid.database.service.SentryDbService;
 import id.swarawan.asteroid.model.api.NeoSentryApiResponse;
 import id.swarawan.asteroid.model.response.NeoSentryResponse;
 import id.swarawan.asteroid.service.nasa.NasaApiService;
@@ -15,22 +15,22 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
-public class NeoSentryService {
+public class SentryService {
 
     private final NasaApiService nasaApiService;
-    private final SentryDataRepository sentryDataRepository;
+    private final SentryDbService sentryDbService;
 
     @Autowired
-    public NeoSentryService(NasaApiService nasaApiService,
-                            SentryDataRepository sentryDataRepository) {
+    public SentryService(NasaApiService nasaApiService,
+                         SentryDbService sentryDbService) {
         this.nasaApiService = nasaApiService;
-        this.sentryDataRepository = sentryDataRepository;
+        this.sentryDbService = sentryDbService;
     }
 
     public NeoSentryResponse getNeoSentry(String referenceId) {
         validateRequest(referenceId);
 
-        SentryTable sentryTables = sentryDataRepository.findBySpkId(referenceId);
+        SentryTable sentryTables = sentryDbService.findByReference(referenceId);
         if (!Objects.isNull(sentryTables)) {
             return convert(sentryTables);
         }
@@ -40,27 +40,7 @@ public class NeoSentryService {
             return null;
         }
         NeoSentryApiResponse apiData = apiResponse.get();
-        SentryTable newSentry = SentryTable.builder()
-                .spkId(apiData.getSpkId())
-                .designation(apiData.getDesignation())
-                .sentryId(apiData.getSentryId())
-                .name(apiData.getFullName())
-                .yearRangeMin(AppUtils.toInt(apiData.getYearRangeMin(), 0))
-                .yearRangeMax(AppUtils.toInt(apiData.getYearRangeMax(), 0))
-                .potentialImpact(AppUtils.toInt(apiData.getPotentialImpacts(), 0))
-                .impactProbability(apiData.getImpactProbability())
-                .vInfinite(AppUtils.toDouble(apiData.getInfinity(), 0.0))
-                .absoluteMagnitude(AppUtils.toDouble(apiData.getAbsoluteMagnitude(), 0.0))
-                .estimatedDiameter(AppUtils.toDouble(apiData.getEstimatedDiameter(), 0.0))
-                .palermoScaleAve(AppUtils.toDouble(apiData.getPalermoScaleAve(), 0.0))
-                .palermoScaleMax(AppUtils.toDouble(apiData.getPalermoScaleMax(), 0.0))
-                .torinoScale(AppUtils.toInt(apiData.getTorinoScale(), 0))
-                .lastObs(apiData.getLastObs())
-                .lastObsJd(AppUtils.toDouble(apiData.getLastObsJd(), 0.0))
-                .impactDetailsUrl(apiData.getUrlImpactDetails())
-                .orbitalElementDetailsUrl(apiData.getUrlOrbitalElementDetails())
-                .build();
-        sentryDataRepository.save(newSentry);
+        SentryTable newSentry = sentryDbService.save(apiData);
         return convert(newSentry);
     }
 

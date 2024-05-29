@@ -1,7 +1,9 @@
 package id.swarawan.asteroid.database.service;
 
+import id.swarawan.asteroid.config.exceptions.NotFoundException;
 import id.swarawan.asteroid.config.utility.AppUtils;
 import id.swarawan.asteroid.database.entity.CloseApproachTable;
+import id.swarawan.asteroid.database.entity.SentryTable;
 import id.swarawan.asteroid.database.repository.CloseApproachRepository;
 import id.swarawan.asteroid.model.api.data.CloseApproachApiData;
 import jakarta.transaction.Transactional;
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class CloseApproachDbService {
@@ -47,5 +50,15 @@ public class CloseApproachDbService {
 
     public boolean existByReferenceIdAndEpoch(String referenceId, Long epoch) {
         return closeApproachRepository.existByReferenceIdAndEpoch(referenceId, epoch) == 1;
+    }
+
+    @Transactional
+    public void delete(String referenceId) {
+        List<CloseApproachTable> closeApproachTable = findByReferenceId(referenceId);
+        if (Objects.isNull(closeApproachTable)) {
+            return;
+        }
+
+        closeApproachRepository.deleteAll(closeApproachTable);
     }
 }

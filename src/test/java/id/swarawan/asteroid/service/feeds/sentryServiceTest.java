@@ -1,7 +1,6 @@
-package id.swarawan.asteroid.service.neofeed;
+package id.swarawan.asteroid.service.feeds;
 
 import id.swarawan.asteroid.config.exceptions.BadRequestException;
-import id.swarawan.asteroid.config.exceptions.NotFoundException;
 import id.swarawan.asteroid.database.entity.SentryTable;
 import id.swarawan.asteroid.database.repository.SentryDataRepository;
 import id.swarawan.asteroid.model.api.NeoSentryApiResponse;
@@ -19,7 +18,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.Optional;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class NeoSentryServiceTest {
+class sentryServiceTest {
 
     @Mock
     private NasaApiService nasaApiService;
@@ -28,7 +27,7 @@ class NeoSentryServiceTest {
     private SentryDataRepository sentryDataRepository;
 
     @InjectMocks
-    private NeoSentryService neoSentryService;
+    private SentryService sentryService;
 
 
     @BeforeAll
@@ -39,14 +38,14 @@ class NeoSentryServiceTest {
     @Test
     public void getNeoSentry_nullReferenceId_throwException() {
         BadRequestException exception = Assertions.assertThrows(BadRequestException.class, () ->
-                neoSentryService.getNeoSentry(null));
+                sentryService.getNeoSentry(null));
         Assertions.assertEquals(exception.getMessage(), "Reference ID is required");
     }
 
     @Test
     public void getNeoSentry_emptyReferenceId_throwException() {
         BadRequestException exception = Assertions.assertThrows(BadRequestException.class, () ->
-                neoSentryService.getNeoSentry(""));
+                sentryService.getNeoSentry(""));
         Assertions.assertEquals(exception.getMessage(), "Reference ID is required");
     }
 
@@ -55,7 +54,7 @@ class NeoSentryServiceTest {
         Mockito.when(nasaApiService.getNeoSentry(Mockito.anyString())).thenReturn(null);
         Mockito.when(sentryDataRepository.findBySpkId(Mockito.anyString())).thenReturn(null);
 
-        NeoSentryResponse actual = neoSentryService.getNeoSentry("abcd1234");
+        NeoSentryResponse actual = sentryService.getNeoSentry("abcd1234");
         Assertions.assertNull(actual);
     }
 
@@ -68,7 +67,7 @@ class NeoSentryServiceTest {
 
         Mockito.when(nasaApiService.getNeoSentry(Mockito.anyString())).thenReturn(Optional.of(apiResponse));
 
-        NeoSentryResponse actual = neoSentryService.getNeoSentry("abcd1234");
+        NeoSentryResponse actual = sentryService.getNeoSentry("abcd1234");
 
         Assertions.assertEquals(actual.getSpkId(), apiResponse.getSpkId());
         Assertions.assertEquals(actual.getFullName(), apiResponse.getFullName());
@@ -83,7 +82,7 @@ class NeoSentryServiceTest {
 
         Mockito.when(sentryDataRepository.findBySpkId(Mockito.anyString())).thenReturn(sampleSentry);
 
-        NeoSentryResponse actual = neoSentryService.getNeoSentry("abcd1234");
+        NeoSentryResponse actual = sentryService.getNeoSentry("abcd1234");
 
         Assertions.assertEquals(actual.getSpkId(), sampleSentry.getSpkId());
         Assertions.assertEquals(actual.getFullName(), sampleSentry.getName());

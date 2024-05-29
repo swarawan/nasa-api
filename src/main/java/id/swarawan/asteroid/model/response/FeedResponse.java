@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class NeoFeedResponse {
+public class FeedResponse {
 
     @JsonProperty(value = "date")
     private LocalDate date;

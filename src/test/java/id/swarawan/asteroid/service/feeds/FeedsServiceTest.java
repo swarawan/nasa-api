@@ -1,4 +1,4 @@
-package id.swarawan.asteroid.service.neofeed;
+package id.swarawan.asteroid.service.feeds;
 
 import id.swarawan.asteroid.config.exceptions.BadRequestException;
 import id.swarawan.asteroid.database.entity.AsteroidTable;
@@ -25,7 +25,7 @@ import java.util.*;
 // TODO: Will revisit for later
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class NeoFeedServiceTest {
+class FeedsServiceTest {
 
     @Mock
     private NasaApiService nasaApiService;
@@ -37,7 +37,7 @@ class NeoFeedServiceTest {
     private CloseApproachDbService closeApproachDbService;
 
     @InjectMocks
-    private NeoFeedService neoFeedService;
+    private FeedsService feedsService;
 
     @BeforeAll
     public void setup() {
@@ -47,28 +47,28 @@ class NeoFeedServiceTest {
     @Test
     public void getNeoFeed_missingStartDate_returnException() {
         BadRequestException exception = Assertions.assertThrows(BadRequestException.class, () ->
-                neoFeedService.getNeoFeed(null, LocalDate.now()));
+                feedsService.findAllFeeds(null, LocalDate.now()));
         Assertions.assertEquals("Start / end date is required", exception.getMessage());
     }
 
     @Test
     public void getNeoFeed_missingEndDate_throwException() {
         BadRequestException exception = Assertions.assertThrows(BadRequestException.class, () ->
-                neoFeedService.getNeoFeed(LocalDate.now(), null));
+                feedsService.findAllFeeds(LocalDate.now(), null));
         Assertions.assertEquals("Start / end date is required", exception.getMessage());
     }
 
     @Test
     public void getNeoFeed_exceedLimitDays_throwException() {
         BadRequestException exception = Assertions.assertThrows(BadRequestException.class, () ->
-                neoFeedService.getNeoFeed(LocalDate.now(), LocalDate.now().plusDays(10)));
+                feedsService.findAllFeeds(LocalDate.now(), LocalDate.now().plusDays(10)));
         Assertions.assertEquals("The feed date limit is only 7 days", exception.getMessage());
     }
 
     @Test
     public void getNeoFeed_startDateIsAfterEndDate_throwException() {
         BadRequestException exception = Assertions.assertThrows(BadRequestException.class, () ->
-                neoFeedService.getNeoFeed(LocalDate.now().plusDays(2), LocalDate.now()));
+                feedsService.findAllFeeds(LocalDate.now().plusDays(2), LocalDate.now()));
         Assertions.assertEquals("Start date cannot more than end date", exception.getMessage());
     }
 
@@ -130,10 +130,10 @@ class NeoFeedServiceTest {
                 .build());
 
         Mockito.when(closeApproachDbService.findByReferenceId(Mockito.anyString())).thenReturn(sampleCloseApproach);
-        Method collectFeedsMethod = neoFeedService.getClass().getDeclaredMethod("collectFeeds", List.class);
+        Method collectFeedsMethod = feedsService.getClass().getDeclaredMethod("collectFeeds", List.class);
         collectFeedsMethod.setAccessible(true);
 
-        List<NeoLookupResponse> actual = (List<NeoLookupResponse>) collectFeedsMethod.invoke(neoFeedService, sampleItem);
+        List<NeoLookupResponse> actual = (List<NeoLookupResponse>) collectFeedsMethod.invoke(feedsService, sampleItem);
 
         Assertions.assertEquals(actual.size(), sampleItem.size());
         Assertions.assertEquals(actual.get(0).getId(), sampleItem.get(0).getReferenceId());

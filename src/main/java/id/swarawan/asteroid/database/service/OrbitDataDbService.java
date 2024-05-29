@@ -1,12 +1,16 @@
 package id.swarawan.asteroid.database.service;
 
+import id.swarawan.asteroid.config.exceptions.NotFoundException;
 import id.swarawan.asteroid.config.utility.AppUtils;
 import id.swarawan.asteroid.database.entity.OrbitTable;
+import id.swarawan.asteroid.database.entity.SentryTable;
 import id.swarawan.asteroid.database.repository.OrbitDataRepository;
 import id.swarawan.asteroid.model.api.data.OrbitalApiData;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 @Service
 public class OrbitDataDbService {
@@ -19,7 +23,7 @@ public class OrbitDataDbService {
     }
 
     @Transactional
-    public OrbitTable save(String referenceId, OrbitalApiData data) {
+    public void save(String referenceId, OrbitalApiData data) {
         OrbitTable orbitTable = OrbitTable.builder()
                 .referenceId(referenceId)
                 .orbitId(data.getOrbitId())
@@ -49,11 +53,19 @@ public class OrbitDataDbService {
                 .orbitClassRange(data.getOrbitClass().getOrbitClassRange())
                 .build();
         orbitDataRepository.save(orbitTable);
-
-        return orbitTable;
     }
 
-    public OrbitTable findOrbitTable(String referenceId) {
+    public OrbitTable findByReference(String referenceId) {
         return orbitDataRepository.findByReference(referenceId);
+    }
+
+    @Transactional
+    public void delete(String referenceId) {
+        OrbitTable orbitTable = findByReference(referenceId);
+        if (Objects.isNull(orbitTable)) {
+            return;
+        }
+
+        orbitDataRepository.delete(orbitTable);
     }
 }

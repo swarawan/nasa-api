@@ -1,56 +1,40 @@
 package id.swarawan.asteroid.database.service;
 
+import id.swarawan.asteroid.config.exceptions.NotFoundException;
 import id.swarawan.asteroid.database.entity.AsteroidTable;
 import id.swarawan.asteroid.database.repository.AsteroidDataRepository;
+import id.swarawan.asteroid.database.repository.SentryDataRepository;
 import id.swarawan.asteroid.model.api.NeoLookupApiResponse;
+import id.swarawan.asteroid.service.feeds.SentryService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class AsteroidDbService {
 
     private final AsteroidDataRepository asteroidDataRepository;
     private final CloseApproachDbService closeApproachDbService;
+    private final SentryDbService sentryDbService;
+    private final OrbitDataDbService orbitDataDbService;
 
     @Autowired
     public AsteroidDbService(AsteroidDataRepository asteroidDataRepository,
-                             CloseApproachDbService closeApproachDbService) {
+                             CloseApproachDbService closeApproachDbService,
+                             SentryDbService sentryDbService, OrbitDataDbService orbitDataDbService) {
         this.asteroidDataRepository = asteroidDataRepository;
         this.closeApproachDbService = closeApproachDbService;
-    }
-
-    /**
-     * Get the first and last date that is not in the database.
-     * <p>
-     * Asteroid data is a very large dataset, and it's a historical data that doesn't change in the future.
-     * So returning a range date not in the database can lead to focus on processing new data.
-     * <p>
-     *
-     * @param startDate start date requested by user
-     * @param endDate   start date requested by user
-     * @return range of date not in database
-     */
-    public Pair<LocalDate, LocalDate> getNotExistDate(LocalDate startDate, LocalDate endDate) {
-        long numOfDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
-        List<LocalDate> notExistDateList = new ArrayList<>();
-        for (int numOfDay = 0; numOfDay < numOfDays; numOfDay++) {
-            boolean isExists = isExistByDate(startDate.plusDays(numOfDay));
-            if (!isExists) {
-                notExistDateList.add(startDate.plusDays(numOfDay));
-            }
-        }
-        if (notExistDateList.isEmpty()) {
-            return null;
-        }
-        return Pair.of(notExistDateList.get(0), notExistDateList.get(notExistDateList.size() - 1));
+        this.sentryDbService = sentryDbService;
+        this.orbitDataDbService = orbitDataDbService;
     }
 
     public boolean isExistByDate(LocalDate date) {
@@ -65,7 +49,8 @@ public class AsteroidDbService {
         return asteroidData;
     }
 
-    public List<AsteroidTable> saveAll(Map<LocalDate, List<NeoLookupApiResponse>> apiData) {
+    @Transactional
+    public void saveAll(Map<LocalDate, List<NeoLookupApiResponse>> apiData) {
         List<AsteroidTable> asteroidData = new ArrayList<>();
         apiData.forEach((date, asteroidObjectApiData) -> {
             boolean isExist = isExistByDate(date);
@@ -74,8 +59,30 @@ public class AsteroidDbService {
             }
         });
         asteroidDataRepository.saveAll(asteroidData);
-        return asteroidData;
     }
+
+    public List<AsteroidTable> findByApproachDate(LocalDate date) {
+        return asteroidDataRepository.findByApproachDate(date);
+    }
+
+    public AsteroidTable findByReferenceId(String referenceId) {
+        return asteroidDataRepository.findByReferenceId(referenceId);
+    }
+
+    @Transactional
+    public void delete(String referenceId) {
+        AsteroidTable asteroidData = findByReferenceId(referenceId);
+        if (Objects.isNull(asteroidData)) {
+            return;
+        }
+
+        asteroidDataRepository.delete(asteroidData);
+
+        sentryDbService.delete(referenceId);
+        orbitDataDbService.delete(referenceId);
+        closeApproachDbService.delete(referenceId);
+    }
+
 
     private AsteroidTable convert(NeoLookupApiResponse apiData) {
         closeApproachDbService.save(apiData.getReferenceId(), apiData.getClosestApproaches());
@@ -94,13 +101,5 @@ public class AsteroidDbService {
                 .isHazardPotential(apiData.getIsHazardousAsteroid())
                 .isSentryObject(apiData.getIsSentryObject())
                 .build();
-    }
-
-    public List<AsteroidTable> findByApproachDate(LocalDate date) {
-        return asteroidDataRepository.findByApproachDate(date);
-    }
-
-    public AsteroidTable findByReferenceId(String referenceId) {
-        return asteroidDataRepository.findByReferenceId(referenceId);
     }
 }

@@ -1,83 +1,55 @@
-package id.swarawan.asteroid.service.neolookup;
+package id.swarawan.asteroid.service.feeds;
 
-import id.swarawan.asteroid.config.exceptions.BadRequestException;
-import id.swarawan.asteroid.config.exceptions.NotFoundException;
-import id.swarawan.asteroid.config.utility.AppUtils;
 import id.swarawan.asteroid.database.entity.AsteroidTable;
 import id.swarawan.asteroid.database.entity.CloseApproachTable;
 import id.swarawan.asteroid.database.entity.OrbitTable;
-import id.swarawan.asteroid.database.service.AsteroidDbService;
-import id.swarawan.asteroid.database.service.CloseApproachDbService;
-import id.swarawan.asteroid.database.service.OrbitDataDbService;
-import id.swarawan.asteroid.model.api.NeoLookupApiResponse;
-import id.swarawan.asteroid.model.api.data.CloseApproachApiData;
 import id.swarawan.asteroid.model.response.NeoLookupResponse;
 import id.swarawan.asteroid.model.response.item.CloseApproachItem;
 import id.swarawan.asteroid.model.response.item.DiameterItem;
 import id.swarawan.asteroid.model.response.item.OrbitalItem;
-import id.swarawan.asteroid.service.nasa.NasaApiService;
-import id.swarawan.asteroid.service.neofeed.NeoSentryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
-public class NeoLookupService {
+public class FeedsHelper {
 
-    private final NasaApiService nasaApiService;
-    private final NeoSentryService neoSentryService;
-    private final AsteroidDbService asteroidDbService;
-    private final CloseApproachDbService closeApproachDbService;
-    private final OrbitDataDbService orbitDataDbService;
+    private final SentryService sentryService;
 
     @Autowired
-    public NeoLookupService(NasaApiService nasaApiService,
-                            NeoSentryService neoSentryService,
-                            AsteroidDbService asteroidDbService,
-                            CloseApproachDbService closeApproachDbService,
-                            OrbitDataDbService orbitDataDbService) {
-        this.nasaApiService = nasaApiService;
-        this.neoSentryService = neoSentryService;
-        this.asteroidDbService = asteroidDbService;
-        this.closeApproachDbService = closeApproachDbService;
-        this.orbitDataDbService = orbitDataDbService;
+    public FeedsHelper(SentryService sentryService) {
+        this.sentryService = sentryService;
     }
 
-    public NeoLookupResponse getNeoLookup(String referenceId) {
-        validate(referenceId);
-
-        NeoLookupApiResponse apiResponse = nasaApiService.getNeoLookUp(referenceId)
-                .orElseThrow(() -> new NotFoundException("Data not found"));
-
-        AsteroidTable asteroidTable = asteroidDbService.findByReferenceId(referenceId);
-        if (Objects.isNull(asteroidTable)) {
-            asteroidTable = asteroidDbService.save(apiResponse);
-        }
-
-        List<CloseApproachApiData> closeApproachApiData = apiResponse.getClosestApproaches();
-        List<CloseApproachTable> closeApproachTables = closeApproachDbService.findByReferenceId(referenceId);
-        if (closeApproachTables.size() != closeApproachApiData.size()) {
-            closeApproachDbService.save(referenceId, closeApproachApiData);
-            closeApproachTables = closeApproachDbService.findByReferenceId(referenceId);
-        }
-
-        OrbitTable orbitTable = orbitDataDbService.findOrbitTable(referenceId);
-        if (Objects.isNull(orbitTable)) {
-            orbitDataDbService.save(referenceId, apiResponse.getOrbitalData());
-        }
-
-        return generateResponse(asteroidTable, closeApproachTables, orbitTable);
+    /**
+     * Generate feed response by given data from database
+     * <p>
+     *
+     * @param asteroidTable       data from specific Asteroid Table data
+     * @param closeApproachTables collection of Close Approach Table data
+     * @return a single feed data
+     */
+    public NeoLookupResponse generateFeedResponse(AsteroidTable asteroidTable, List<CloseApproachTable> closeApproachTables) {
+        return generateFeedResponse(asteroidTable, closeApproachTables, null);
     }
 
-    public NeoLookupResponse generateResponse(AsteroidTable asteroidTable, List<CloseApproachTable> closeApproachTables) {
-        return generateResponse(asteroidTable, closeApproachTables, null);
-    }
-
-    public NeoLookupResponse generateResponse(AsteroidTable asteroidTable,
-                                              List<CloseApproachTable> closeApproachTables,
-                                              OrbitTable orbitTable) {
+    /**
+     * Generate feed response by given data from database
+     * <p>
+     *
+     * @param asteroidTable       data from specific Asteroid Table data
+     * @param closeApproachTables collection of Close Approach Table data
+     * @param orbitTable          data from Orbit Table for specific Asteroid
+     * @return a single feed data
+     */
+    public NeoLookupResponse generateFeedResponse(AsteroidTable asteroidTable,
+                                                  List<CloseApproachTable> closeApproachTables,
+                                                  OrbitTable orbitTable) {
         NeoLookupResponse.NeoLookupResponseBuilder builder = NeoLookupResponse.builder()
                 .id(asteroidTable.getReferenceId())
                 .name(asteroidTable.getName())
@@ -87,7 +59,7 @@ public class NeoLookupService {
                 .isSentryObject(asteroidTable.getIsSentryObject());
 
         if (asteroidTable.getIsSentryObject()) {
-            builder.sentryData(neoSentryService.getNeoSentry(asteroidTable.getReferenceId()));
+            builder.sentryData(sentryService.getNeoSentry(asteroidTable.getReferenceId()));
         }
 
         builder.estimatedDiameterKm(DiameterItem.builder()
@@ -152,10 +124,22 @@ public class NeoLookupService {
         return builder.build();
     }
 
-    public void validate(String referenceId) {
-        if (Objects.isNull(referenceId)) {
-            throw new BadRequestException("Reference ID is required");
+    /**
+     * Collect all dates based on start-date and end-date
+     * <p>
+     * This function will collect all dates in a range of date, avoid duplication by using Set instead of List
+     *
+     * @param startDate start of a range date
+     * @param endDate   end of a range date
+     * @return a sets of dates
+     */
+    public Set<LocalDate> collectDates(LocalDate startDate, LocalDate endDate) {
+        Set<LocalDate> result = new HashSet<>();
+        LocalDate tempDate = startDate;
+        while (tempDate.isBefore(endDate) || tempDate.equals(endDate)) {
+            result.add(tempDate);
+            tempDate = tempDate.plusDays(1);
         }
+        return result;
     }
-
 }
