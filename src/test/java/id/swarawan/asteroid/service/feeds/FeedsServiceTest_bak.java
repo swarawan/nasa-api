@@ -6,7 +6,7 @@ import id.swarawan.asteroid.database.entity.CloseApproachTable;
 import id.swarawan.asteroid.database.service.AsteroidDbService;
 import id.swarawan.asteroid.database.service.CloseApproachDbService;
 import id.swarawan.asteroid.model.response.SentryResponse;
-import id.swarawan.asteroid.model.response.SingleFeedResponse;
+import id.swarawan.asteroid.model.response.SingleAsteroidResponse;
 import id.swarawan.asteroid.service.nasa.NasaApiService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -133,7 +133,7 @@ class FeedsServiceTest_bak {
         Method collectFeedsMethod = feedsService.getClass().getDeclaredMethod("collectFeeds", List.class);
         collectFeedsMethod.setAccessible(true);
 
-        List<SingleFeedResponse> actual = (List<SingleFeedResponse>) collectFeedsMethod.invoke(feedsService, sampleItem);
+        List<SingleAsteroidResponse> actual = (List<SingleAsteroidResponse>) collectFeedsMethod.invoke(feedsService, sampleItem);
 
         Assertions.assertEquals(actual.size(), sampleItem.size());
         Assertions.assertEquals(actual.get(0).getId(), sampleItem.get(0).getReferenceId());

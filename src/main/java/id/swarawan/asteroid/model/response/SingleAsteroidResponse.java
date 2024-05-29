@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SingleFeedResponse {
+public class SingleAsteroidResponse {
 
     @JsonProperty(value = "id")
     private String id;

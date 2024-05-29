@@ -4,7 +4,7 @@ import id.swarawan.asteroid.database.entity.AsteroidTable;
 import id.swarawan.asteroid.database.entity.CloseApproachTable;
 import id.swarawan.asteroid.database.entity.OrbitTable;
 import id.swarawan.asteroid.model.response.SentryResponse;
-import id.swarawan.asteroid.model.response.SingleFeedResponse;
+import id.swarawan.asteroid.model.response.SingleAsteroidResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,7 +59,7 @@ class FeedsHelperTest {
 
         Mockito.when(sentryService.getNeoSentry(Mockito.anyString())).thenReturn(sentryResponse);
 
-        SingleFeedResponse actualResponse = feedsHelper.generateFeedResponse(asteroidTable, closeApproachTables, orbitTable);
+        SingleAsteroidResponse actualResponse = feedsHelper.generateFeedResponse(asteroidTable, closeApproachTables, orbitTable);
 
         Assertions.assertEquals(actualResponse.getId(), "001");
         Assertions.assertEquals(actualResponse.getSentryData().getSpkId(), "001");

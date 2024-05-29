@@ -69,11 +69,11 @@ Shell script to easier developer manage this project. To use the command just ru
 
 --- 
 
-### 1. Feed API
+### 1. Asteroids API
 
 This API will return a list of Asteroid based on their closest approach date to Earth.
 
-#### URL: http://localhost:8080/nasa/feed?start_date={}&end_date={}
+#### URL: http://localhost:8080/nasa/asteroids?start_date={}&end_date={}
 
 #### Query Parameters
 
@@ -132,11 +132,11 @@ This API will return a list of Asteroid based on their closest approach date to 
 }
 ```
 
-### 2. Single Feed API
+### 2. Single Asteroid API
 
 This API will look up a specific Asteroid based on [NASA JPL](https://ssd.jpl.nasa.gov/tools/sbdb_query.html).
 
-#### URL: localhost:8080/nasa/feed/{reference_id}
+#### URL: http://localhost:8080/nasa/asteroids/{reference_id}
 
 #### Path Parameters
 

@@ -1,8 +1,9 @@
 package id.swarawan.asteroid.api;
 
+import id.swarawan.asteroid.enums.Modes;
 import id.swarawan.asteroid.model.response.BaseResponse;
-import id.swarawan.asteroid.model.response.FeedResponse;
-import id.swarawan.asteroid.model.response.SingleFeedResponse;
+import id.swarawan.asteroid.model.response.MultiAsteroidResponse;
+import id.swarawan.asteroid.model.response.SingleAsteroidResponse;
 import id.swarawan.asteroid.service.feeds.FeedsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -15,7 +16,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping(
-        value = "/nasa/feed",
+        value = "/nasa/asteroids",
         consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 public class NasaController {
@@ -28,13 +29,13 @@ public class NasaController {
     }
 
     @GetMapping
-    public ResponseEntity<Object> getNeoFeed(
+    public ResponseEntity<Object> findAsteroids(
             @RequestParam("start_date") LocalDate startDate,
             @RequestParam(value = "end_date", required = false) LocalDate endDate) {
         if (Objects.isNull(endDate)) {
             endDate = startDate.plusDays(7);
         }
-        List<FeedResponse> data = feedsService.findAllFeeds(startDate, endDate);
+        List<MultiAsteroidResponse> data = feedsService.findAllFeeds(startDate, endDate);
         BaseResponse<Object> response = BaseResponse.builder()
                 .success(true)
                 .data(data)
@@ -44,8 +45,20 @@ public class NasaController {
     }
 
     @GetMapping("{reference_id}")
-    public ResponseEntity<Object> getLookup(@PathVariable("reference_id") String referenceId) {
-        SingleFeedResponse data = feedsService.findSingleFeed(referenceId);
+    public ResponseEntity<Object> findSingleAsteroid(@PathVariable("reference_id") String referenceId) {
+        SingleAsteroidResponse data = feedsService.findSingleFeed(referenceId);
+        BaseResponse<Object> response = BaseResponse.builder()
+                .success(true)
+                .data(data)
+                .message("Success")
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("top{number}/by/{modes}")
+    public ResponseEntity<Object> findTopAsteroids(@PathVariable("number") long number,
+                                                   @PathVariable("modes") Modes modes) {
+        List<SingleAsteroidResponse> data = feedsService.topN(number, modes);
         BaseResponse<Object> response = BaseResponse.builder()
                 .success(true)
                 .data(data)

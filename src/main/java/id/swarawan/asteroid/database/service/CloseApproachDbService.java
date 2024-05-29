@@ -10,6 +10,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
@@ -50,6 +52,25 @@ public class CloseApproachDbService {
 
     public boolean existByReferenceIdAndEpoch(String referenceId, Long epoch) {
         return closeApproachRepository.existByReferenceIdAndEpoch(referenceId, epoch) == 1;
+    }
+
+    public List<CloseApproachTable> findTopDistance(Long number) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd 00:00:00.0");
+        List<Object[]> result = closeApproachRepository.findTopDistance(number);
+        return result.stream().map(data -> CloseApproachTable.builder()
+                .referenceId(String.valueOf(data[1]))
+                .approachDate(LocalDate.parse(String.valueOf(data[2]), dateTimeFormatter))
+                .approachDateFull(String.valueOf(data[3]))
+                .approachDateEpoch(Long.parseLong(String.valueOf(data[4])))
+                .velocityKps(Double.parseDouble(String.valueOf(data[5])))
+                .velocityKph(Double.parseDouble(String.valueOf(data[6])))
+                .velocityMph(Double.parseDouble(String.valueOf(data[7])))
+                .distanceAstronomical(Double.parseDouble(String.valueOf(data[8])))
+                .distanceLunar(Double.parseDouble(String.valueOf(data[9])))
+                .distanceKilometers(Double.parseDouble(String.valueOf(data[10])))
+                .distanceMiles(Double.parseDouble(String.valueOf(data[11])))
+                .orbitingBody(String.valueOf(data[12]))
+                .build()).toList();
     }
 
     @Transactional

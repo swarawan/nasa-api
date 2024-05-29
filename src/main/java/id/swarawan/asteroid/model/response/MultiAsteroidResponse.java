@@ -15,11 +15,11 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FeedResponse {
+public class MultiAsteroidResponse {
 
     @JsonProperty(value = "date")
     private LocalDate date;
 
     @JsonProperty(value = "asteroids")
-    private List<SingleFeedResponse> asteroids;
+    private List<SingleAsteroidResponse> asteroids;
 }

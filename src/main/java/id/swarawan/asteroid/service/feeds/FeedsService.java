@@ -8,11 +8,12 @@ import id.swarawan.asteroid.database.entity.OrbitTable;
 import id.swarawan.asteroid.database.service.AsteroidDbService;
 import id.swarawan.asteroid.database.service.CloseApproachDbService;
 import id.swarawan.asteroid.database.service.OrbitDataDbService;
+import id.swarawan.asteroid.enums.Modes;
 import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
 import id.swarawan.asteroid.model.api.NeoLookupApiResponse;
 import id.swarawan.asteroid.model.api.data.CloseApproachApiData;
-import id.swarawan.asteroid.model.response.SingleFeedResponse;
-import id.swarawan.asteroid.model.response.FeedResponse;
+import id.swarawan.asteroid.model.response.SingleAsteroidResponse;
+import id.swarawan.asteroid.model.response.MultiAsteroidResponse;
 import id.swarawan.asteroid.service.nasa.NasaApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,9 +43,9 @@ public class FeedsService {
         this.feedsHelper = feedsHelper;
     }
 
-    public List<FeedResponse> findAllFeeds(LocalDate startDate, LocalDate endDate) throws BadRequestException {
+    public List<MultiAsteroidResponse> findAllFeeds(LocalDate startDate, LocalDate endDate) throws BadRequestException {
         validateRequest(startDate, endDate);
-        List<FeedResponse> result = new ArrayList<>();
+        List<MultiAsteroidResponse> result = new ArrayList<>();
         Set<LocalDate> dates = feedsHelper.collectDates(startDate, endDate);
         Set<LocalDate> emptyDates = new HashSet<>();
 
@@ -53,7 +54,7 @@ public class FeedsService {
             if (dataTable.isEmpty()) {
                 emptyDates.add(date);
             } else {
-                result.add(FeedResponse.builder()
+                result.add(MultiAsteroidResponse.builder()
                         .date(date)
                         .asteroids(generateLookup(dataTable))
                         .build());
@@ -74,16 +75,16 @@ public class FeedsService {
 
             emptyDates.forEach(date -> {
                 List<AsteroidTable> dataTable = asteroidDbService.findByApproachDate(date);
-                result.add(FeedResponse.builder()
+                result.add(MultiAsteroidResponse.builder()
                         .date(date)
                         .asteroids(generateLookup(dataTable))
                         .build());
             });
         }
-        return result.stream().sorted(Comparator.comparing(FeedResponse::getDate)).toList();
+        return result.stream().sorted(Comparator.comparing(MultiAsteroidResponse::getDate)).toList();
     }
 
-    public SingleFeedResponse findSingleFeed(String referenceId) {
+    public SingleAsteroidResponse findSingleFeed(String referenceId) {
         if (Objects.isNull(referenceId)) {
             throw new BadRequestException("Reference ID is required");
         }
@@ -115,7 +116,7 @@ public class FeedsService {
         asteroidDbService.delete(referenceId);
     }
 
-    private List<SingleFeedResponse> generateLookup(List<AsteroidTable> asteroids) {
+    private List<SingleAsteroidResponse> generateLookup(List<AsteroidTable> asteroids) {
         return asteroids.stream().map(data -> {
             List<CloseApproachTable> closeApproachTables = closeApproachDbService.findByReferenceId(data.getReferenceId());
             return feedsHelper.generateFeedResponse(data, closeApproachTables);
@@ -130,5 +131,19 @@ public class FeedsService {
         } else if (endDate.isAfter(startDate.plusDays(7))) {
             throw new BadRequestException("The feed date limit is only 7 days");
         }
+    }
+
+    public List<SingleAsteroidResponse> topN(long number, Modes modes) {
+        List<AsteroidTable> asteroids;
+        if (modes == Modes.DIAMETER) {
+            asteroids = asteroidDbService.findTopDiameter(number);
+        } else {
+            List<CloseApproachTable> closeApproaches = closeApproachDbService.findTopDistance(number);
+            asteroids = closeApproaches.stream().map(data ->
+                    asteroidDbService.findByReferenceId(data.getReferenceId())
+            ).toList();
+        }
+
+        return asteroids.stream().map(feedsHelper::generateFeedResponse).toList();
     }
 }

@@ -3,7 +3,7 @@ package id.swarawan.asteroid.service.feeds;
 import id.swarawan.asteroid.database.entity.AsteroidTable;
 import id.swarawan.asteroid.database.entity.CloseApproachTable;
 import id.swarawan.asteroid.database.entity.OrbitTable;
-import id.swarawan.asteroid.model.response.SingleFeedResponse;
+import id.swarawan.asteroid.model.response.SingleAsteroidResponse;
 import id.swarawan.asteroid.model.response.item.CloseApproachItem;
 import id.swarawan.asteroid.model.response.item.DiameterItem;
 import id.swarawan.asteroid.model.response.item.OrbitalItem;
@@ -26,6 +26,11 @@ public class FeedsHelper {
         this.sentryService = sentryService;
     }
 
+
+    public SingleAsteroidResponse generateFeedResponse(AsteroidTable asteroidTable) {
+        return generateFeedResponse(asteroidTable, null, null);
+    }
+
     /**
      * Generate feed response by given data from database
      * <p>
@@ -34,7 +39,7 @@ public class FeedsHelper {
      * @param closeApproachTables collection of Close Approach Table data
      * @return a single feed data
      */
-    public SingleFeedResponse generateFeedResponse(AsteroidTable asteroidTable, List<CloseApproachTable> closeApproachTables) {
+    public SingleAsteroidResponse generateFeedResponse(AsteroidTable asteroidTable, List<CloseApproachTable> closeApproachTables) {
         return generateFeedResponse(asteroidTable, closeApproachTables, null);
     }
 
@@ -47,10 +52,10 @@ public class FeedsHelper {
      * @param orbitTable          data from Orbit Table for specific Asteroid
      * @return a single feed data
      */
-    public SingleFeedResponse generateFeedResponse(AsteroidTable asteroidTable,
-                                                   List<CloseApproachTable> closeApproachTables,
-                                                   OrbitTable orbitTable) {
-        SingleFeedResponse.SingleFeedResponseBuilder builder = SingleFeedResponse.builder()
+    public SingleAsteroidResponse generateFeedResponse(AsteroidTable asteroidTable,
+                                                       List<CloseApproachTable> closeApproachTables,
+                                                       OrbitTable orbitTable) {
+        SingleAsteroidResponse.SingleAsteroidResponseBuilder builder = SingleAsteroidResponse.builder()
                 .id(asteroidTable.getReferenceId())
                 .name(asteroidTable.getName())
                 .jplUrl(asteroidTable.getNasaJplUrl())
@@ -77,19 +82,21 @@ public class FeedsHelper {
                 .diameterMax(asteroidTable.getDiameterFeetMax())
                 .build());
 
-        List<CloseApproachItem> closeApproachItems = closeApproachTables.stream().map(closeApproach -> CloseApproachItem.builder()
-                .approachDate(closeApproach.getApproachDate())
-                .approachDateFull(closeApproach.getApproachDateFull())
-                .orbitBody(closeApproach.getOrbitingBody())
-                .velocityKps(closeApproach.getVelocityKps())
-                .velocityKph(closeApproach.getVelocityKph())
-                .velocityMph(closeApproach.getVelocityMph())
-                .distanceAstronomical(closeApproach.getDistanceAstronomical())
-                .distanceLunar(closeApproach.getDistanceLunar())
-                .distanceKilometers(closeApproach.getDistanceKilometers())
-                .distanceMiles(closeApproach.getDistanceMiles())
-                .build()).toList();
-        builder.closeApproaches(closeApproachItems);
+        if (!Objects.isNull(closeApproachTables)) {
+            List<CloseApproachItem> closeApproachItems = closeApproachTables.stream().map(closeApproach -> CloseApproachItem.builder()
+                    .approachDate(closeApproach.getApproachDate())
+                    .approachDateFull(closeApproach.getApproachDateFull())
+                    .orbitBody(closeApproach.getOrbitingBody())
+                    .velocityKps(closeApproach.getVelocityKps())
+                    .velocityKph(closeApproach.getVelocityKph())
+                    .velocityMph(closeApproach.getVelocityMph())
+                    .distanceAstronomical(closeApproach.getDistanceAstronomical())
+                    .distanceLunar(closeApproach.getDistanceLunar())
+                    .distanceKilometers(closeApproach.getDistanceKilometers())
+                    .distanceMiles(closeApproach.getDistanceMiles())
+                    .build()).toList();
+            builder.closeApproaches(closeApproachItems);
+        }
 
         if (!Objects.isNull(orbitTable)) {
             builder.orbitData(OrbitalItem.builder()

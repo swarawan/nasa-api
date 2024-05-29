@@ -69,6 +69,10 @@ public class AsteroidDbService {
         return asteroidDataRepository.findByReferenceId(referenceId);
     }
 
+    public List<AsteroidTable> findTopDiameter(long limit) {
+        return asteroidDataRepository.findTopDiameter(limit);
+    }
+
     @Transactional
     public void delete(String referenceId) {
         AsteroidTable asteroidData = findByReferenceId(referenceId);
