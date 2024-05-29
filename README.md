@@ -73,7 +73,7 @@ Shell script to easier developer manage this project. To use the command just ru
 
 This API will return a list of Asteroid based on their closest approach date to Earth.
 
-#### URL: http://localhost:8080/nasa/asteroids?start_date={}&end_date={}
+#### URL: [GET] http://localhost:8080/nasa/asteroids?start_date={}&end_date={}
 
 #### Query Parameters
 
@@ -81,6 +81,8 @@ This API will return a list of Asteroid based on their closest approach date to 
 |------------|-----------------------------------|------------|--------------------------------------|
 | start_date | Starting date for asteroid search | YYYY-MM-DD | none (required)                      |
 | end_date   | End date for asteroid search      | YYYY-MM-DD | limited only 7 days after start_date |
+
+#### Example: [GET] http://localhost:8080/nasa/asteroids?start_date=2023-01-01&end_date=2023-01-05
 
 #### Response
 
@@ -136,13 +138,15 @@ This API will return a list of Asteroid based on their closest approach date to 
 
 This API will look up a specific Asteroid based on [NASA JPL](https://ssd.jpl.nasa.gov/tools/sbdb_query.html).
 
-#### URL: http://localhost:8080/nasa/asteroids/{reference_id}
+#### URL: [GET] http://localhost:8080/nasa/asteroids/{reference_id}
 
 #### Path Parameters
 
 | Parameter    | Description                                           | Format | Default  |
 |--------------|-------------------------------------------------------|--------|----------|
 | reference_id | Asteroid SPK-ID correlates to the NASA JPL Small Body | string | required |
+
+#### Example: [GET] http://localhost:8080/nasa/asteroids/2154347
 
 #### Response
 
@@ -211,5 +215,50 @@ This API will look up a specific Asteroid based on [NASA JPL](https://ssd.jpl.na
     "is_hazard_asteroid": false,
     "is_sentry_object": false
   }
+}
+```
+
+### 3. Find Top-N Asteroids
+
+Returns a top-N Asteroids based on specific criteria.
+
+#### URL: [GET] http://localhost:8080/nasa/asteroids/{top-n}/{mode}
+
+#### Path Parameters
+
+| Parameter | Description                    | Format                    | Default         |
+|-----------|--------------------------------|---------------------------|-----------------|
+| top-n     | Returns a numbers of asteroids | top10, top20, top{number} | none (required) |
+| mode      | Top-n lookup criteria          | distance, diameter        | none (required) |
+
+#### Example: [GET] http://localhost:8080/nasa/asteroids/top10/distance
+
+#### Response
+```json
+{
+  "success": true,
+  "message": "Success",
+  "data": [
+    {
+      "id": "2306383",
+      "name": "306383 (1993 VD)",
+      "nasa_jpl_url": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=2306383",
+      "absolute_magnitude": 21.49,
+      "estimated_diameter_km": {
+        "diameter_min": 0.0831583679,
+        "diameter_max": 0.2992540101
+      },
+      "estimated_diameter_miles": {
+        "diameter_min": 0.0831583679,
+        "diameter_max": 0.1859477635
+      },
+      "estimated_diameter_feet": {
+        "diameter_min": 439.0763323438,
+        "diameter_max": 981.8045264321
+      },
+      "is_hazard_asteroid": true,
+      "is_sentry_object": false
+    }
+  ]
 }
 ```
