@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping(
@@ -29,8 +30,10 @@ public class NasaController {
     @GetMapping
     public ResponseEntity<Object> getNeoFeed(
             @RequestParam("start_date") LocalDate startDate,
-            @RequestParam("end_date") LocalDate endDate) {
-
+            @RequestParam(value = "end_date", required = false) LocalDate endDate) {
+        if (Objects.isNull(endDate)) {
+            endDate = startDate.plusDays(7);
+        }
         List<FeedResponse> data = feedsService.findAllFeeds(startDate, endDate);
         BaseResponse<Object> response = BaseResponse.builder()
                 .success(true)

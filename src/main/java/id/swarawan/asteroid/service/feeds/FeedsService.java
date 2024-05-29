@@ -123,8 +123,8 @@ public class FeedsService {
     }
 
     private void validateRequest(LocalDate startDate, LocalDate endDate) throws BadRequestException {
-        if (Objects.isNull(startDate) || Objects.isNull(endDate)) {
-            throw new BadRequestException("Start / end date is required");
+        if (Objects.isNull(startDate)) {
+            throw new BadRequestException("Start date is required");
         } else if (startDate.isAfter(endDate)) {
             throw new BadRequestException("Start date cannot more than end date");
         } else if (endDate.isAfter(startDate.plusDays(7))) {
