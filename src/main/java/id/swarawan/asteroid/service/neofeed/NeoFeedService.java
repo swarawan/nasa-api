@@ -4,11 +4,13 @@ import id.swarawan.asteroid.config.exceptions.BadRequestException;
 import id.swarawan.asteroid.config.utility.AppUtils;
 import id.swarawan.asteroid.database.entity.AsteroidTable;
 import id.swarawan.asteroid.database.entity.CloseApproachTable;
+import id.swarawan.asteroid.database.repository.AsteroidDataRepository;
 import id.swarawan.asteroid.database.service.AsteroidDbService;
 import id.swarawan.asteroid.database.service.CloseApproachDbService;
 import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
 import id.swarawan.asteroid.model.api.data.AsteroidObjectApiData;
 import id.swarawan.asteroid.model.api.data.item.EstimatedDiameterApiItem;
+import id.swarawan.asteroid.model.response.NeoSentryResponse;
 import id.swarawan.asteroid.model.response.item.CloseApproachItem;
 import id.swarawan.asteroid.model.response.item.DiameterItem;
 import id.swarawan.asteroid.model.response.item.NeoFeedItem;
@@ -42,30 +44,70 @@ public class NeoFeedService {
 
     public List<NeoFeedResponse> getNeoFeed(LocalDate startDate, LocalDate endDate) throws BadRequestException {
         validateRequest(startDate, endDate);
-        NeoFeedApiResponse neoFeedApiResponse = nasaApiService.getNeoFeedApi(startDate, endDate);
-        if (neoFeedApiResponse.getNearEarthObjects().isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        List<AsteroidTable> dataTable = asteroidDbService.save(neoFeedApiResponse.getNearEarthObjects());
+        List<NeoFeedResponse> result = new ArrayList<>();
         Set<LocalDate> dates = collectDates(startDate, endDate);
+        Set<LocalDate> emptyDates = new HashSet<>();
 
-        return dates.stream().map(date -> {
-            List<AsteroidTable> asteroids = dataTable.stream().filter(dt -> dt.getApproachDate().isEqual(date)).toList();
-            return NeoFeedResponse.builder()
-                    .date(date)
-                    .asteroids(collectFeeds(asteroids))
-                    .build();
+        dates.forEach(date -> {
+            List<AsteroidTable> dataTable = asteroidDbService.findByApproachDate(date);
+            if (dataTable.isEmpty()) {
+                emptyDates.add(date);
+            } else {
+                result.add(NeoFeedResponse.builder()
+                        .date(date)
+                        .asteroids(collectFeeds(dataTable))
+                        .build());
+            }
+        });
 
-        }).toList();
+        if (!emptyDates.isEmpty()) {
+            startDate = emptyDates.stream().findFirst().get();
+            for (LocalDate date : emptyDates) {
+                endDate = date;
+            }
+            NeoFeedApiResponse neoFeedApiResponse = nasaApiService.getNeoFeedApi(startDate, endDate);
+            Map<LocalDate, List<AsteroidObjectApiData>> nearEarthObjects = neoFeedApiResponse.getNearEarthObjects();
+            if (!nearEarthObjects.isEmpty()) {
+                asteroidDbService.save(nearEarthObjects);
+            }
+
+            emptyDates.forEach(date -> {
+                List<AsteroidTable> dataTable = asteroidDbService.findByApproachDate(date);
+                result.add(NeoFeedResponse.builder()
+                        .date(date)
+                        .asteroids(collectFeeds(dataTable))
+                        .build());
+            });
+        }
+        return result.stream().sorted(Comparator.comparing(NeoFeedResponse::getDate)).toList();
     }
+
+//    public List<NeoFeedResponse> getNeoFeed(LocalDate startDate, LocalDate endDate) throws BadRequestException {
+//        validateRequest(startDate, endDate);
+//        NeoFeedApiResponse neoFeedApiResponse = nasaApiService.getNeoFeedApi(startDate, endDate);
+//        if (neoFeedApiResponse.getNearEarthObjects().isEmpty()) {
+//            return Collections.emptyList();
+//        }
+//
+//        asteroidDbService.save(neoFeedApiResponse.getNearEarthObjects());
+//        Set<LocalDate> dates = collectDates(startDate, endDate);
+//
+//        return dates.stream().map(date -> {
+//            List<AsteroidTable> asteroids = dataTable.stream().filter(dt -> dt.getApproachDate().isEqual(date)).toList();
+//            return NeoFeedResponse.builder()
+//                    .date(date)
+//                    .asteroids(collectFeeds(asteroids))
+//                    .build();
+//
+//        }).toList();
+//    }
 
     private Set<LocalDate> collectDates(LocalDate startDate, LocalDate endDate) {
         Set<LocalDate> result = new HashSet<>();
         LocalDate tempDate = startDate;
-        while (tempDate.isBefore(endDate) || tempDate.isEqual(endDate)) {
-            result.add(startDate);
-            tempDate = startDate.plusDays(1);
+        while (tempDate.isBefore(endDate) || tempDate.equals(endDate)) {
+            result.add(tempDate);
+            tempDate = tempDate.plusDays(1);
         }
         return result;
     }
@@ -80,7 +122,7 @@ public class NeoFeedService {
                     .isHazardAsteroid(data.getIsHazardPotential())
                     .isSentryObject(data.getIsSentryObject());
 
-            if (!Objects.isNull(data.getIsSentryObject())) {
+            if (data.getIsSentryObject()) {
                 builder.sentryData(neoSentryService.getNeoSentry(data.getReferenceId()));
             }
 
@@ -99,7 +141,7 @@ public class NeoFeedService {
                     .diameterMax(data.getDiameterFeetMax())
                     .build());
 
-            List<CloseApproachTable> closeApproachTables = closeApproachDbService.getByAsteroid(data.getId());
+            List<CloseApproachTable> closeApproachTables = closeApproachDbService.findByReferenceId(data.getReferenceId());
             List<CloseApproachItem> closeApproachItems = closeApproachTables.stream().map(closeApproach -> CloseApproachItem.builder()
                     .approachDate(closeApproach.getApproachDate())
                     .approachDateFull(closeApproach.getApproachDateFull())

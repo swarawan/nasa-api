@@ -14,6 +14,10 @@ import java.util.List;
 public interface CloseApproachRepository extends JpaRepository<CloseApproachTable, Long> {
 
     @Query(nativeQuery = true,
-            value = "SELECT * FROM close_approach WHERE asteroid_id = :asteroidId")
-    List<CloseApproachTable> findByAsteroid(@Param("asteroidId") Long asteroidId);
+            value = "SELECT * FROM close_approach WHERE reference_id = :reference_id")
+    List<CloseApproachTable> findByReferenceId(@Param("reference_id") String referenceId);
+
+    @Query(nativeQuery = true,
+            value = "SELECT EXISTS(SELECT * FROM close_approach WHERE reference_id = :reference_id AND approach_date_epoch = :epoch)")
+    long existByReferenceIdAndEpoch(@Param("reference_id") String referenceId, @Param("epoch") Long epoch);
 }

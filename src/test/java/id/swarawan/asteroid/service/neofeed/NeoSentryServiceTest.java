@@ -2,6 +2,8 @@ package id.swarawan.asteroid.service.neofeed;
 
 import id.swarawan.asteroid.config.exceptions.BadRequestException;
 import id.swarawan.asteroid.config.exceptions.NotFoundException;
+import id.swarawan.asteroid.database.entity.SentryTable;
+import id.swarawan.asteroid.database.repository.SentryDataRepository;
 import id.swarawan.asteroid.model.api.NeoSentryApiResponse;
 import id.swarawan.asteroid.model.response.NeoSentryResponse;
 import id.swarawan.asteroid.service.nasa.NasaApiService;
@@ -20,8 +22,12 @@ class NeoSentryServiceTest {
     @Mock
     private NasaApiService nasaApiService;
 
+    @Mock
+    private SentryDataRepository sentryDataRepository;
+
     @InjectMocks
     private NeoSentryService neoSentryService;
+
 
     @BeforeAll
     public void setup() {
@@ -43,12 +49,12 @@ class NeoSentryServiceTest {
     }
 
     @Test
-    public void getNeoSentry_apiReturnNull_throwException() {
+    public void getNeoSentry_apiReturnNull_returnNull() {
         Mockito.when(nasaApiService.getNeoSentry(Mockito.anyString())).thenReturn(null);
-        NotFoundException actual = Assertions.assertThrows(NotFoundException.class, () ->
-                neoSentryService.getNeoSentry("abcd1234"));
+        Mockito.when(sentryDataRepository.findBySpkId(Mockito.anyString())).thenReturn(null);
 
-        Assertions.assertEquals(actual.getMessage(), "Data not found");
+        NeoSentryResponse actual = neoSentryService.getNeoSentry("abcd1234");
+        Assertions.assertNull(actual);
     }
 
     @Test
@@ -64,5 +70,20 @@ class NeoSentryServiceTest {
 
         Assertions.assertEquals(actual.getSpkId(), apiResponse.getSpkId());
         Assertions.assertEquals(actual.getFullName(), apiResponse.getFullName());
+    }
+
+    @Test
+    public void getNeoSentry_dataExist_returnData() {
+        SentryTable sampleSentry = SentryTable.builder()
+                .spkId("001")
+                .name("OBS")
+                .build();
+
+        Mockito.when(sentryDataRepository.findBySpkId(Mockito.anyString())).thenReturn(sampleSentry);
+
+        NeoSentryResponse actual = neoSentryService.getNeoSentry("abcd1234");
+
+        Assertions.assertEquals(actual.getSpkId(), sampleSentry.getSpkId());
+        Assertions.assertEquals(actual.getFullName(), sampleSentry.getName());
     }
 }

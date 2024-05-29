@@ -27,10 +27,6 @@ public class AsteroidTable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JoinColumn(name = "sentry_id")
-    @OneToOne(fetch = FetchType.LAZY)
-    private SentryTable sentry;
-
     @Column(name = "reference_id", nullable = false)
     private String referenceId;
 

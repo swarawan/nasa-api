@@ -27,8 +27,8 @@ public class SentryTable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "reference_id", nullable = false)
-    private String referenceId;
+    @Column(name = "spk_id", nullable = false)
+    private String spkId;
 
     @Column(name = "designation", nullable = false)
     private String designation;

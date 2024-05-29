@@ -61,7 +61,7 @@ public class AsteroidDbService {
     }
 
     @Transactional
-    public List<AsteroidTable> save(Map<LocalDate, List<AsteroidObjectApiData>> apiData) {
+    public void save(Map<LocalDate, List<AsteroidObjectApiData>> apiData) {
         List<AsteroidTable> asteroidData = new ArrayList<>();
         apiData.forEach((date, asteroidObjectApiData) -> {
             boolean isExist = isExistByDate(date);
@@ -69,11 +69,11 @@ public class AsteroidDbService {
                 asteroidObjectApiData.forEach(data -> asteroidData.add(convert(data)));
             }
         });
-        return asteroidData;
+        asteroidDataRepository.saveAll(asteroidData);
     }
 
     private AsteroidTable convert(AsteroidObjectApiData apiData) {
-        closeApproachDbService.save(apiData.getClosestApproaches());
+        closeApproachDbService.save(apiData.getReferenceId(), apiData.getClosestApproaches());
         return AsteroidTable.builder()
                 .referenceId(apiData.getId())
                 .approachDate(apiData.getClosestApproaches().get(0).getApproachDate())
@@ -93,5 +93,9 @@ public class AsteroidDbService {
 
     public List<AsteroidTable> getAllByRange(LocalDate startDate, LocalDate endDate) {
         return asteroidDataRepository.getAllByRange(startDate, endDate);
+    }
+
+    public List<AsteroidTable> findByApproachDate(LocalDate date) {
+        return asteroidDataRepository.findByApproachDate(date);
     }
 }

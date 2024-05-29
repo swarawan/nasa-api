@@ -19,4 +19,8 @@ public interface AsteroidDataRepository extends JpaRepository<AsteroidTable, Lon
     @Query(nativeQuery = true,
             value = "SELECT * FROM asteroid_data WHERE approach_date between :start AND :end")
     List<AsteroidTable> getAllByRange(@Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    @Query(nativeQuery = true,
+            value = "SELECT * FROM asteroid_data WHERE approach_date = :date")
+    List<AsteroidTable> findByApproachDate(@Param("date") LocalDate date);
 }

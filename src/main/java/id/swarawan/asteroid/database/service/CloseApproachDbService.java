@@ -21,11 +21,14 @@ public class CloseApproachDbService {
     }
 
     @Transactional
-    public void save(List<CloseApproachApiData> closeApproaches) {
-        List<CloseApproachTable> closeApproachData = closeApproaches.stream().map(data ->
-                CloseApproachTable.builder()
+    public void save(String referenceId, List<CloseApproachApiData> closeApproaches) {
+        List<CloseApproachTable> closeApproachData = closeApproaches.stream()
+                .filter(data -> !existByReferenceIdAndEpoch(referenceId, data.getApproachDateEpoch()))
+                .map(data -> CloseApproachTable.builder()
+                        .referenceId(referenceId)
                         .approachDate(data.getApproachDate())
                         .approachDateFull(data.getApproachDateFull())
+                        .approachDateEpoch(data.getApproachDateEpoch())
                         .velocityKps(AppUtils.toDouble(data.getRelativeVelocity().getKilometerPerSecond(), 0.0))
                         .velocityKph(AppUtils.toDouble(data.getRelativeVelocity().getKilometerPerHour(), 0.0))
                         .velocityMph(AppUtils.toDouble(data.getRelativeVelocity().getMilesPerSecond(), 0.0))
@@ -38,7 +41,11 @@ public class CloseApproachDbService {
         closeApproachRepository.saveAll(closeApproachData);
     }
 
-    public List<CloseApproachTable> getByAsteroid(Long asteroidId) {
-        return closeApproachRepository.findByAsteroid(asteroidId);
+    public List<CloseApproachTable> findByReferenceId(String referenceId) {
+        return closeApproachRepository.findByReferenceId(referenceId);
+    }
+
+    public boolean existByReferenceIdAndEpoch(String referenceId, Long epoch) {
+        return closeApproachRepository.existByReferenceIdAndEpoch(referenceId, epoch) == 1;
     }
 }

@@ -1,7 +1,7 @@
 create table if not exists `sentry_data`
 (
     `id`                          bigint primary key auto_increment not null,
-    `reference_id`                varchar(256)                      not null,
+    `spk_id`                      varchar(256)                      not null,
     `designation`                 varchar(256)                      not null,
     `sentry_id`                   varchar(256),
     `name`                        varchar(256),
@@ -28,7 +28,6 @@ create table if not exists `sentry_data`
 create table if not exists `asteroid_data`
 (
     `id`                  bigint primary key auto_increment not null,
-    `sentry_id`           bigint,
     `reference_id`        varchar(256)                      not null,
     `name`                varchar(256)                      not null,
     `nasa_jpl_url`        varchar(256),
@@ -44,16 +43,16 @@ create table if not exists `asteroid_data`
     `is_sentry_object`    tinyint,
     `created_at`          datetime                          not null default current_timestamp,
     `updated_at`          datetime on update current_timestamp,
-    `deleted_at`          datetime,
-    foreign key (sentry_id) references sentry_data (id)
+    `deleted_at`          datetime
 );
 
 create table if not exists `close_approach`
 (
     `id`                    bigint primary key auto_increment not null,
-    `asteroid_id`           bigint,
+    `reference_id`          varchar(256),
     `approach_date`         datetime,
-    `approach_date_full`  varchar(100),
+    `approach_date_full`    varchar(100),
+    `approach_date_epoch`   bigint,
     `velocity_kps`          double,
     `velocity_kph`          double,
     `velocity_mph`          double,
@@ -64,8 +63,7 @@ create table if not exists `close_approach`
     `orbiting_body`         varchar(100),
     `created_at`            datetime                          not null default current_timestamp,
     `updated_at`            datetime on update current_timestamp,
-    `deleted_at`            datetime,
-    foreign key (asteroid_id) references asteroid_data (id)
+    `deleted_at`            datetime
 );
 
 
