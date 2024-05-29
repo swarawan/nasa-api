@@ -1,6 +1,9 @@
-package id.swarawan.asteroid.model.api.data;
+package id.swarawan.asteroid.model.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import id.swarawan.asteroid.model.api.data.CloseApproachApiData;
+import id.swarawan.asteroid.model.api.data.EstimatedDiameterApiData;
+import id.swarawan.asteroid.model.api.data.OrbitalApiData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AsteroidObjectApiData {
+public class NeoLookupApiResponse {
 
     @JsonProperty(value = "id")
     private String id;
@@ -37,6 +40,9 @@ public class AsteroidObjectApiData {
 
     @JsonProperty(value = "close_approach_data")
     private List<CloseApproachApiData> closestApproaches;
+
+    @JsonProperty(value = "orbital_data")
+    private List<OrbitalApiData> orbitalData;
 
     @JsonProperty(value = "is_sentry_object")
     private Boolean isSentryObject;

@@ -1,23 +1,18 @@
 package id.swarawan.asteroid.service.neofeed;
 
 import id.swarawan.asteroid.config.exceptions.BadRequestException;
-import id.swarawan.asteroid.config.utility.AppUtils;
 import id.swarawan.asteroid.database.entity.AsteroidTable;
 import id.swarawan.asteroid.database.entity.CloseApproachTable;
-import id.swarawan.asteroid.database.repository.AsteroidDataRepository;
 import id.swarawan.asteroid.database.service.AsteroidDbService;
 import id.swarawan.asteroid.database.service.CloseApproachDbService;
 import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
-import id.swarawan.asteroid.model.api.data.AsteroidObjectApiData;
-import id.swarawan.asteroid.model.api.data.item.EstimatedDiameterApiItem;
-import id.swarawan.asteroid.model.response.NeoSentryResponse;
+import id.swarawan.asteroid.model.api.NeoLookupApiResponse;
 import id.swarawan.asteroid.model.response.item.CloseApproachItem;
 import id.swarawan.asteroid.model.response.item.DiameterItem;
 import id.swarawan.asteroid.model.response.item.NeoFeedItem;
 import id.swarawan.asteroid.model.response.NeoFeedResponse;
 import id.swarawan.asteroid.service.nasa.NasaApiService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -66,7 +61,7 @@ public class NeoFeedService {
                 endDate = date;
             }
             NeoFeedApiResponse neoFeedApiResponse = nasaApiService.getNeoFeedApi(startDate, endDate);
-            Map<LocalDate, List<AsteroidObjectApiData>> nearEarthObjects = neoFeedApiResponse.getNearEarthObjects();
+            Map<LocalDate, List<NeoLookupApiResponse>> nearEarthObjects = neoFeedApiResponse.getNearEarthObjects();
             if (!nearEarthObjects.isEmpty()) {
                 asteroidDbService.save(nearEarthObjects);
             }

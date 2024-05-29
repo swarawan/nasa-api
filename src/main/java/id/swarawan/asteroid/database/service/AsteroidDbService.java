@@ -2,9 +2,7 @@ package id.swarawan.asteroid.database.service;
 
 import id.swarawan.asteroid.database.entity.AsteroidTable;
 import id.swarawan.asteroid.database.repository.AsteroidDataRepository;
-import id.swarawan.asteroid.model.api.data.AsteroidObjectApiData;
-import id.swarawan.asteroid.model.response.NeoFeedResponse;
-import id.swarawan.asteroid.model.response.item.NeoFeedItem;
+import id.swarawan.asteroid.model.api.NeoLookupApiResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
@@ -15,7 +13,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Service
 public class AsteroidDbService {
@@ -61,7 +58,7 @@ public class AsteroidDbService {
     }
 
     @Transactional
-    public void save(Map<LocalDate, List<AsteroidObjectApiData>> apiData) {
+    public void save(Map<LocalDate, List<NeoLookupApiResponse>> apiData) {
         List<AsteroidTable> asteroidData = new ArrayList<>();
         apiData.forEach((date, asteroidObjectApiData) -> {
             boolean isExist = isExistByDate(date);
@@ -72,7 +69,7 @@ public class AsteroidDbService {
         asteroidDataRepository.saveAll(asteroidData);
     }
 
-    private AsteroidTable convert(AsteroidObjectApiData apiData) {
+    private AsteroidTable convert(NeoLookupApiResponse apiData) {
         closeApproachDbService.save(apiData.getReferenceId(), apiData.getClosestApproaches());
         return AsteroidTable.builder()
                 .referenceId(apiData.getId())

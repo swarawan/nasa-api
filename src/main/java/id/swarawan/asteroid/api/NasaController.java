@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(
-        value = "/nasa",
+        value = "/nasa/neofeed",
         consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 public class NasaController {
@@ -29,7 +29,7 @@ public class NasaController {
         this.neoSentryService = neoSentryService;
     }
 
-    @GetMapping("/neofeed")
+    @GetMapping
     public ResponseEntity<Object> getNeoFeed(
             @RequestParam("start_date") LocalDate startDate,
             @RequestParam("end_date") LocalDate endDate) {
@@ -43,7 +43,7 @@ public class NasaController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/neosentry/{reference_id}")
+    @GetMapping("/sentry/{reference_id}")
     public ResponseEntity<Object> getNeoSentry(@PathVariable("reference_id") String referenceId) {
         NeoSentryResponse data = neoSentryService.getNeoSentry(referenceId);
         BaseResponse<Object> response = BaseResponse.builder()

@@ -21,4 +21,8 @@ public interface NasaApi {
     @GetMapping("/neo/rest/v1/neo/sentry/{reference_id}")
     NeoSentryApiResponse getNeoSentry(@RequestParam("api_key") String key,
                                       @PathVariable("reference_id") String referenceId);
+
+    @GetMapping("/neo/rest/v1/neo/{reference_id}")
+    NeoFeedApiResponse getNeoLookup(@RequestParam("api_key") String key,
+                                      @PathVariable("") String referenceId);
 }

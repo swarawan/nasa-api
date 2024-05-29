@@ -1,16 +1,12 @@
 package id.swarawan.asteroid.service.neofeed;
 
 import id.swarawan.asteroid.config.exceptions.BadRequestException;
-import id.swarawan.asteroid.config.utility.AppUtils;
 import id.swarawan.asteroid.database.entity.AsteroidTable;
 import id.swarawan.asteroid.database.entity.CloseApproachTable;
 import id.swarawan.asteroid.database.service.AsteroidDbService;
 import id.swarawan.asteroid.database.service.CloseApproachDbService;
-import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
-import id.swarawan.asteroid.model.api.data.AsteroidObjectApiData;
 import id.swarawan.asteroid.model.response.NeoSentryResponse;
 import id.swarawan.asteroid.model.response.item.NeoFeedItem;
-import id.swarawan.asteroid.model.response.NeoFeedResponse;
 import id.swarawan.asteroid.service.nasa.NasaApiService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -24,7 +20,6 @@ import org.mockito.MockitoAnnotations;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 // TODO: Will revisit for later
