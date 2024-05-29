@@ -4,8 +4,6 @@ This project is a Java Based Application that utilize NASA Asteroid API.
 
 ## Getting Started
 
---- 
-
 This part is containing of instruction on setting up your machine and project locally.
 
 ### Prerequisites
@@ -22,8 +20,6 @@ Makes sure your machine is installed with below applications:
 This project required to have a NASA API Key to run. Generate your own api key [here](https://api.nasa.gov/).
 
 ## How to Run
-
----
 
 To run this project locally, follow these instruction steps:
 
@@ -66,8 +62,6 @@ Shell script to easier developer manage this project. To use the command just ru
 | install <service-name> | Install additional tools like MySQL, Redis, etc. All service includes in `compose.yml` file |
 
 ## Features
-
---- 
 
 ### 1. Asteroids API
 
