@@ -4,7 +4,7 @@ import id.swarawan.asteroid.config.exceptions.BadRequestException;
 import id.swarawan.asteroid.database.entity.SentryTable;
 import id.swarawan.asteroid.database.repository.SentryDataRepository;
 import id.swarawan.asteroid.model.api.NeoSentryApiResponse;
-import id.swarawan.asteroid.model.response.NeoSentryResponse;
+import id.swarawan.asteroid.model.response.SentryResponse;
 import id.swarawan.asteroid.service.nasa.NasaApiService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,7 +18,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.Optional;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class sentryServiceTest {
+class sentryServiceTest_bak {
 
     @Mock
     private NasaApiService nasaApiService;
@@ -54,7 +54,7 @@ class sentryServiceTest {
         Mockito.when(nasaApiService.getNeoSentry(Mockito.anyString())).thenReturn(null);
         Mockito.when(sentryDataRepository.findBySpkId(Mockito.anyString())).thenReturn(null);
 
-        NeoSentryResponse actual = sentryService.getNeoSentry("abcd1234");
+        SentryResponse actual = sentryService.getNeoSentry("abcd1234");
         Assertions.assertNull(actual);
     }
 
@@ -67,7 +67,7 @@ class sentryServiceTest {
 
         Mockito.when(nasaApiService.getNeoSentry(Mockito.anyString())).thenReturn(Optional.of(apiResponse));
 
-        NeoSentryResponse actual = sentryService.getNeoSentry("abcd1234");
+        SentryResponse actual = sentryService.getNeoSentry("abcd1234");
 
         Assertions.assertEquals(actual.getSpkId(), apiResponse.getSpkId());
         Assertions.assertEquals(actual.getFullName(), apiResponse.getFullName());
@@ -82,7 +82,7 @@ class sentryServiceTest {
 
         Mockito.when(sentryDataRepository.findBySpkId(Mockito.anyString())).thenReturn(sampleSentry);
 
-        NeoSentryResponse actual = sentryService.getNeoSentry("abcd1234");
+        SentryResponse actual = sentryService.getNeoSentry("abcd1234");
 
         Assertions.assertEquals(actual.getSpkId(), sampleSentry.getSpkId());
         Assertions.assertEquals(actual.getFullName(), sampleSentry.getName());

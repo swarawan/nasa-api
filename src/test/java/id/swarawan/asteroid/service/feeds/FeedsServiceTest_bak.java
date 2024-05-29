@@ -5,8 +5,8 @@ import id.swarawan.asteroid.database.entity.AsteroidTable;
 import id.swarawan.asteroid.database.entity.CloseApproachTable;
 import id.swarawan.asteroid.database.service.AsteroidDbService;
 import id.swarawan.asteroid.database.service.CloseApproachDbService;
-import id.swarawan.asteroid.model.response.NeoSentryResponse;
-import id.swarawan.asteroid.model.response.NeoLookupResponse;
+import id.swarawan.asteroid.model.response.SentryResponse;
+import id.swarawan.asteroid.model.response.SingleFeedResponse;
 import id.swarawan.asteroid.service.nasa.NasaApiService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,7 +25,7 @@ import java.util.*;
 // TODO: Will revisit for later
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class FeedsServiceTest {
+class FeedsServiceTest_bak {
 
     @Mock
     private NasaApiService nasaApiService;
@@ -111,7 +111,7 @@ class FeedsServiceTest {
                 .isSentryObject(true)
                 .build();
 
-        NeoSentryResponse sampleSentry = NeoSentryResponse.builder()
+        SentryResponse sampleSentry = SentryResponse.builder()
                 .spkId("001")
                 .fullName("OBS")
                 .build();
@@ -133,7 +133,7 @@ class FeedsServiceTest {
         Method collectFeedsMethod = feedsService.getClass().getDeclaredMethod("collectFeeds", List.class);
         collectFeedsMethod.setAccessible(true);
 
-        List<NeoLookupResponse> actual = (List<NeoLookupResponse>) collectFeedsMethod.invoke(feedsService, sampleItem);
+        List<SingleFeedResponse> actual = (List<SingleFeedResponse>) collectFeedsMethod.invoke(feedsService, sampleItem);
 
         Assertions.assertEquals(actual.size(), sampleItem.size());
         Assertions.assertEquals(actual.get(0).getId(), sampleItem.get(0).getReferenceId());

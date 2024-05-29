@@ -21,5 +21,5 @@ public class FeedResponse {
     private LocalDate date;
 
     @JsonProperty(value = "asteroids")
-    private List<NeoLookupResponse> asteroids;
+    private List<SingleFeedResponse> asteroids;
 }

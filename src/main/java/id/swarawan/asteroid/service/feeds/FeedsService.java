@@ -11,7 +11,7 @@ import id.swarawan.asteroid.database.service.OrbitDataDbService;
 import id.swarawan.asteroid.model.api.NeoFeedApiResponse;
 import id.swarawan.asteroid.model.api.NeoLookupApiResponse;
 import id.swarawan.asteroid.model.api.data.CloseApproachApiData;
-import id.swarawan.asteroid.model.response.NeoLookupResponse;
+import id.swarawan.asteroid.model.response.SingleFeedResponse;
 import id.swarawan.asteroid.model.response.FeedResponse;
 import id.swarawan.asteroid.service.nasa.NasaApiService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +83,7 @@ public class FeedsService {
         return result.stream().sorted(Comparator.comparing(FeedResponse::getDate)).toList();
     }
 
-    public NeoLookupResponse findSingleFeed(String referenceId) {
+    public SingleFeedResponse findSingleFeed(String referenceId) {
         if (Objects.isNull(referenceId)) {
             throw new BadRequestException("Reference ID is required");
         }
@@ -115,7 +115,7 @@ public class FeedsService {
         asteroidDbService.delete(referenceId);
     }
 
-    private List<NeoLookupResponse> generateLookup(List<AsteroidTable> asteroids) {
+    private List<SingleFeedResponse> generateLookup(List<AsteroidTable> asteroids) {
         return asteroids.stream().map(data -> {
             List<CloseApproachTable> closeApproachTables = closeApproachDbService.findByReferenceId(data.getReferenceId());
             return feedsHelper.generateFeedResponse(data, closeApproachTables);

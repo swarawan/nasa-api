@@ -1,6 +1,5 @@
 package id.swarawan.asteroid.model.response;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -15,7 +14,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class NeoSentryResponse {
+public class SentryResponse {
 
     @JsonProperty(value = "spkId")
     private String spkId;

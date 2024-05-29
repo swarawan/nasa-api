@@ -38,7 +38,7 @@ public class AsteroidDbService {
     }
 
     public boolean isExistByDate(LocalDate date) {
-        return asteroidDataRepository.existsByDate(date.toString()) == 1;
+        return asteroidDataRepository.existsByDate(date.toString()) != 0;
     }
 
     @Transactional

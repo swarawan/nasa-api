@@ -2,7 +2,7 @@ package id.swarawan.asteroid.api;
 
 import id.swarawan.asteroid.model.response.BaseResponse;
 import id.swarawan.asteroid.model.response.FeedResponse;
-import id.swarawan.asteroid.model.response.NeoLookupResponse;
+import id.swarawan.asteroid.model.response.SingleFeedResponse;
 import id.swarawan.asteroid.service.feeds.FeedsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -42,7 +42,7 @@ public class NasaController {
 
     @GetMapping("{reference_id}")
     public ResponseEntity<Object> getLookup(@PathVariable("reference_id") String referenceId) {
-        NeoLookupResponse data = feedsService.findSingleFeed(referenceId);
+        SingleFeedResponse data = feedsService.findSingleFeed(referenceId);
         BaseResponse<Object> response = BaseResponse.builder()
                 .success(true)
                 .data(data)

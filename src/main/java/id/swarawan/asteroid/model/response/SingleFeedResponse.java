@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class NeoLookupResponse {
+public class SingleFeedResponse {
 
     @JsonProperty(value = "id")
     private String id;
@@ -53,5 +53,5 @@ public class NeoLookupResponse {
     private Boolean isSentryObject;
 
     @JsonProperty(value = "sentry_data")
-    private NeoSentryResponse sentryData;
+    private SentryResponse sentryData;
 }
