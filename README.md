@@ -216,14 +216,14 @@ This API will look up a specific Asteroid based on [NASA JPL](https://ssd.jpl.na
 
 Returns a top-N Asteroids based on specific criteria.
 
-#### URL: [GET] http://localhost:8080/nasa/asteroids/{top-n}/{mode}
+#### URL: [GET] http://localhost:8080/nasa/asteroids/{topn}/{mode}
 
 #### Path Parameters
 
 | Parameter | Description                    | Format                    | Default         |
-|-----------|--------------------------------|---------------------------|-----------------|
-| top-n     | Returns a numbers of asteroids | top10, top20, top{number} | none (required) |
-| mode      | Top-n lookup criteria          | distance, diameter        | none (required) |
+|----------|--------------------------------|---------------------------|-----------------|
+| topn     | Returns a numbers of asteroids | top10, top20, top{number} | none (required) |
+| mode     | Top-n lookup criteria          | distance, diameter        | none (required) |
 
 #### Example: [GET] http://localhost:8080/nasa/asteroids/top10/distance
 
