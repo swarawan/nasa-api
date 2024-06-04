@@ -34,7 +34,7 @@ Create manually from your DB Client or using terminal execute below query
 CREATE DATABASE nasa_asteroid 
 ```
 
-3. Put Nasa API-Key to `application.yml` file
+3. Put Nasa API-Key to `application.properties` file
 
 ```yaml
 ...
