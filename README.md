@@ -28,8 +28,13 @@ To run this project locally, follow these instruction steps:
 ```git
 git clone git@github.com:swarawan/nasa-api.git
 ```
+2. Create database `nasa_asteroid` on your local DB.
+Create manually from your DB Client or using terminal execute below query
+```mysql
+CREATE DATABASE nasa_asteroid 
+```
 
-2. Put Nasa API-Key to `application.yml` file
+3. Put Nasa API-Key to `application.yml` file
 
 ```yaml
 ...
@@ -37,7 +42,7 @@ git clone git@github.com:swarawan/nasa-api.git
   nasa-api={put-your-api-key-here}
 ```
 
-3. To run on docker engine, run this command
+4. To run on docker engine, run this command
 
 ```shell
 chmod +x asteroid.sh
